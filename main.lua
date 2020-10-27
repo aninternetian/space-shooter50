@@ -18,7 +18,7 @@ player.speed = 200
 
 -- enemy
 enemies = {}
-enemyTimerMax = 1
+enemyTimerMax = 1.5
 enemyTimer = enemyTimerMax
 enemyImg = nil
 enemyColor = {
@@ -104,8 +104,8 @@ function love.update(dt)
             image = enemyImg,
             width = enemyImg:getWidth(),
             height = enemyImg:getHeight(),
-            x = math.random(40, VIRTUAL_WIDTH - 40),
-            y = - enemyHeight,
+            x = math.random(8, VIRTUAL_WIDTH - 8),
+            y = -18,
             speed = 100,
             rotation = math.random(0, 360),
             color = enemyColor[love.math.random(1, #enemyColor)]
@@ -132,7 +132,7 @@ function love.draw()
     elseif gameState == 'play' then
         for i, v in ipairs(enemies) do
             love.graphics.setColor(v.color)
-            love.graphics.draw(v.image, v.x, v.y, v.rotation, 0.5, 0.5)
+            love.graphics.draw(v.image, v.x, v.y, v.rotation, 0.3, 0.3)
         end
     end
 

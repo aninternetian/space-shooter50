@@ -75,10 +75,8 @@ function love.load()
     sounds = {
         ['boom'] = love.audio.newSource('sounds/boom.ogg', 'static'),
         ['shoot'] = love.audio.newSource('sounds/shoot.ogg', 'static'),
-        ['win'] = love.audio.newSource('sounds/win.ogg', 'static')
     }
 
-    gameState = 'start'
 
     song:setLooping(false) -- set to true later
     --love.audio.play(song)
@@ -91,13 +89,6 @@ end
 function love.keypressed(key)
     if key == 'escape' then
         love.event.quit()
-    end
-    if key == 'enter' or key == 'return' then
-        if gameState == 'start' then
-            gameState = 'play'
-        elseif gameState == 'done' then
-            gameState = 'play'
-        end
     end
 end
 
@@ -127,6 +118,7 @@ function love.update(dt)
             speed = 500
         }
         table.insert(bullets, newBullet)
+        sounds['shoot']:play()
         canShoot = false
         canShootTimer = canShootTimerMax
     end
@@ -164,13 +156,14 @@ function love.update(dt)
             if collision(enemy.x, enemy.y, enemyWidth, enemyHeight, bullet.x, bullet.y, bulletWidth, bulletHeight) then
                 table.remove(bullets, j)
                 table.remove(enemies, i)
-                score = score + 5
+                score = score + 1
+                sounds['boom']:play()
             end
         end
         if collision(enemy.x, enemy.y, enemyWidth, enemyHeight, player.x, player.y, player.width, player.height) and isAlive then
             table.remove(enemies, i)
+            sounds['boom']:play()
             isAlive = false
-            -- gameState = 'done'
         end
     end
 end
@@ -178,26 +171,18 @@ end
 function love.draw()
     push:apply('start')
 
-    if gameState == 'start' then
-        love.graphics.setFont(largeFont)
-        love.graphics.printf('Space Shooter CS50!', 0, 30, VIRTUAL_WIDTH, 'center')
-        love.graphics.setFont(smallFont)
-        love.graphics.printf('Press Enter to begin!', 0, 140, VIRTUAL_WIDTH, 'center')
-    elseif gameState == 'play' then
-        love.graphics.print("Score: " .. tostring(score), 400, 10)
-        if isAlive then
-            love.graphics.draw(player.image, player.x, player.y)
-        end
+    love.graphics.setFont(smallFont)
+    love.graphics.print("Score: " .. tostring(score), 400, 10)
+    if isAlive then
+        love.graphics.draw(player.image, player.x, player.y)
+    end
 
-        for i, v in ipairs(bullets) do
-            love.graphics.draw(v.image, v.x, v.y)
-        end
-        for i, v in ipairs(enemies) do
-            love.graphics.setColor(v.color)
-            love.graphics.draw(v.image, v.x, v.y, v.rotation, 0.3, 0.3)
-        end
-    elseif gameState == 'done' then
-        love.graphics.printf('Press Enter to try again!', 0, 140, VIRTUAL_WIDTH, 'center')
+    for i, v in ipairs(bullets) do
+        love.graphics.draw(v.image, v.x, v.y)
+    end
+    for i, v in ipairs(enemies) do
+        love.graphics.setColor(v.color)
+        love.graphics.draw(v.image, v.x, v.y, v.rotation, 0.3, 0.3)
     end
 
     push:apply('end')

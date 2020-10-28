@@ -1,7 +1,8 @@
 # Space Shooter 50
 A simple space shooter type of game for CS50 using Love2d.  
 
-Progress updates on [twitter](https://twitter.com/aninternetian)  
+Progress updates on [twitter](https://twitter.com/aninternetian)
+
 ![screenshot](https://github.com/iamironcat/space-shooter50/blob/master/graphics/screenshot.gif "screenshot")
 
 # Credits

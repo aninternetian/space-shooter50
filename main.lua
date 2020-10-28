@@ -63,8 +63,8 @@ function love.load()
     })
 
     enemyImage = love.graphics.newImage('graphics/enemy.png')
-    enemyWidth = enemyImage:getWidth()
-    enemyHeight = enemyImage:getHeight()
+    enemyWidth = 10
+    enemyHeight = 10
 
     bulletImage = love.graphics.newImage('graphics/bullet.png')
     bulletWidth = bulletImage:getWidth()
@@ -189,16 +189,17 @@ function love.draw()
     love.graphics.print("Score: " .. tostring(score), 100, 10)
     if isAlive then
         love.graphics.draw(player.image, player.x, player.y)
-    else
-        love.graphics.print("Press 'R' to restart", VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2)
-    end
 
-    for i, v in ipairs(bullets) do
-        love.graphics.draw(v.image, v.x, v.y)
-    end
-    for i, v in ipairs(enemies) do
-        love.graphics.setColor(v.color)
-        love.graphics.draw(v.image, v.x, v.y, v.rotation, 0.3, 0.3)
+        for i, v in ipairs(bullets) do
+            love.graphics.draw(v.image, v.x, v.y)
+        end
+        for i, v in ipairs(enemies) do
+            love.graphics.setColor(v.color)
+            love.graphics.draw(v.image, v.x, v.y, 0, 0.3, 0.3)
+            -- v.rotation
+        end
+    else
+        love.graphics.print("Press 'R' to restart", 70, VIRTUAL_HEIGHT / 2)
     end
 
     push:apply('end')

@@ -101,94 +101,96 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
-    -- player
-    if love.keyboard.isDown('left', 'a') then
-        if player.x > 0 then -- player doesn't go off screen
-            player.x = player.x - (player.speed * dt)
-        end
-    elseif love.keyboard.isDown('right', 'd') then
-        if player.x < (VIRTUAL_WIDTH - player.width) then
-            player.x = player.x + (player.speed * dt)
-        end
-    end
-
-    -- bullet
-    canShootTimer = canShootTimer - (1 * dt)
-    if canShootTimer < 0 then
-        canShoot = true
-    end
-
-    if love.keyboard.isDown('space') then
-        newBullet = {
-            image = bulletImage,
-            x = player.x,
-            y = player.y,
-            speed = 500
-        }
-        table.insert(bullets, newBullet)
-        sounds['shoot']:play()
-        canShoot = false
-        canShootTimer = canShootTimerMax
-    end
-    for i, v in ipairs(bullets) do
-        v.y = v.y - (v.speed * dt)
-        if v.y < 0 then
-            table.remove(bullets, i)
-        end
-    end
-
-    -- enemy
-    enemyTimer = enemyTimer - (1 * dt)
-    if enemyTimer < 0 then
-        enemyTimer = enemyTimerMax
-        newEnemy = {
-            image = enemyImage,
-            x = math.random(30, VIRTUAL_WIDTH - 30),
-            y = -30,
-            speed = 100,
-            color = enemyColor[love.math.random(1, #enemyColor)]
-        }
-        table.insert(enemies, newEnemy)
-    end
-    for i, v in ipairs(enemies) do
-        v.y = v.y + (v.speed * dt)
-        if v.y > VIRTUAL_HEIGHT + enemyHeight then
-            table.remove(enemies, i)
-        end
-    end
-
-    -- collision
-    for i, enemy in ipairs(enemies) do
-        for j, bullet in ipairs(bullets) do
-            if collision(enemy.x, enemy.y, enemyWidth, enemyHeight, bullet.x, bullet.y, bulletWidth, bulletHeight) then
-                table.remove(bullets, j)
-                table.remove(enemies, i)
-                score = score + 1
-                sounds['boom']:play()
+    if gameState == 'play' then
+        -- player
+        if love.keyboard.isDown('left', 'a') then
+            if player.x > 0 then -- player doesn't go off screen
+                player.x = player.x - (player.speed * dt)
+            end
+        elseif love.keyboard.isDown('right', 'd') then
+            if player.x < (VIRTUAL_WIDTH - player.width) then
+                player.x = player.x + (player.speed * dt)
             end
         end
-        if collision(enemy.x, enemy.y, enemyWidth, enemyHeight, player.x, player.y, player.width, player.height) and isAlive then
-            table.remove(enemies, i)
-            sounds['boom']:play()
-            isAlive = false
-            gameState = 'done'
+
+        -- bullet
+        canShootTimer = canShootTimer - (1 * dt)
+        if canShootTimer < 0 then
+            canShoot = true
         end
-    end
 
-    -- reset game
-    if not isAlive then
-        -- gameState = 'done'
-        bullets = {}
-        enemies = {}
+        if love.keyboard.isDown('space') then
+            newBullet = {
+                image = bulletImage,
+                x = player.x,
+                y = player.y,
+                speed = 500
+            }
+            table.insert(bullets, newBullet)
+            sounds['shoot']:play()
+            canShoot = false
+            canShootTimer = canShootTimerMax
+        end
+        for i, v in ipairs(bullets) do
+            v.y = v.y - (v.speed * dt)
+            if v.y < 0 then
+                table.remove(bullets, i)
+            end
+        end
 
-        canShootTimer = canShootTimerMax
-        enemyTimer = enemyTimerMax
+        -- enemy
+        enemyTimer = enemyTimer - (1 * dt)
+        if enemyTimer < 0 then
+            enemyTimer = enemyTimerMax
+            newEnemy = {
+                image = enemyImage,
+                x = math.random(30, VIRTUAL_WIDTH - 30),
+                y = -30,
+                speed = 100,
+                color = enemyColor[love.math.random(1, #enemyColor)]
+            }
+            table.insert(enemies, newEnemy)
+        end
+        for i, v in ipairs(enemies) do
+            v.y = v.y + (v.speed * dt)
+            if v.y > VIRTUAL_HEIGHT + enemyHeight then
+                table.remove(enemies, i)
+            end
+        end
 
-        player.x = VIRTUAL_WIDTH / 2 - player.width / 2
-        player.y = VIRTUAL_HEIGHT - player.height - 20
+        -- collision
+        for i, enemy in ipairs(enemies) do
+            for j, bullet in ipairs(bullets) do
+                if collision(enemy.x, enemy.y, enemyWidth, enemyHeight, bullet.x, bullet.y, bulletWidth, bulletHeight) then
+                    table.remove(bullets, j)
+                    table.remove(enemies, i)
+                    score = score + 1
+                    sounds['boom']:play()
+                end
+            end
+            if collision(enemy.x, enemy.y, enemyWidth, enemyHeight, player.x, player.y, player.width, player.height) and isAlive then
+                table.remove(enemies, i)
+                sounds['boom']:play()
+                isAlive = false
+                gameState = 'done'
+            end
+        end
 
-        score = 0
-        isAlive = true
+        -- reset game
+        if not isAlive then
+            -- gameState = 'done'
+            bullets = {}
+            enemies = {}
+
+            canShootTimer = canShootTimerMax
+            enemyTimer = enemyTimerMax
+
+            player.x = VIRTUAL_WIDTH / 2 - player.width / 2
+            player.y = VIRTUAL_HEIGHT - player.height - 20
+
+            score = 0
+            isAlive = true
+        end
     end
 end
 
@@ -197,9 +199,9 @@ function love.draw()
 
     if gameState == 'start' then
         love.graphics.setFont(largeFont)
-        love.graphics.printf('Space Shooter CS50!', 0, 30, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf('Space Shooter CS50!', 0, 100, VIRTUAL_WIDTH, 'center')
         love.graphics.setFont(smallFont)
-        love.graphics.printf('Press Enter to begin!', 0, 140, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf('Press Enter to begin!', 0, 250, VIRTUAL_WIDTH, 'center')
     elseif gameState == 'play' then
         love.graphics.setFont(smallFont)
         love.graphics.print("Score: " .. tostring(score), 100, 10)

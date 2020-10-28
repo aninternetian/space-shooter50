@@ -63,8 +63,8 @@ function love.load()
     })
 
     enemyImage = love.graphics.newImage('graphics/enemy.png')
-    enemyWidth = 10
-    enemyHeight = 10
+    enemyWidth = enemyImage:getWidth()
+    enemyHeight = enemyImage:getHeight()
 
     bulletImage = love.graphics.newImage('graphics/bullet.png')
     bulletWidth = bulletImage:getWidth()
@@ -77,6 +77,8 @@ function love.load()
         ['shoot'] = love.audio.newSource('sounds/shoot.ogg', 'static'),
     }
 
+    gameState = 'start'
+
     song:setLooping(false) -- set to true later
     --love.audio.play(song)
 end
@@ -88,6 +90,13 @@ end
 function love.keypressed(key)
     if key == 'escape' then
         love.event.quit()
+    end
+    if key == 'enter' or key == 'return' then
+        if gameState == 'start' then
+            gameState = 'play'
+        elseif gameState == 'done' then
+            gameState = 'play'
+        end
     end
 end
 
@@ -134,10 +143,9 @@ function love.update(dt)
         enemyTimer = enemyTimerMax
         newEnemy = {
             image = enemyImage,
-            x = math.random(8, VIRTUAL_WIDTH - 8),
-            y = -18,
+            x = math.random(30, VIRTUAL_WIDTH - 30),
+            y = -30,
             speed = 100,
-            rotation = math.random(0, 360),
             color = enemyColor[love.math.random(1, #enemyColor)]
         }
         table.insert(enemies, newEnemy)
@@ -163,11 +171,13 @@ function love.update(dt)
             table.remove(enemies, i)
             sounds['boom']:play()
             isAlive = false
+            gameState = 'done'
         end
     end
 
     -- reset game
-    if not isAlive and love.keyboard.isDown('r') then
+    if not isAlive then
+        -- gameState = 'done'
         bullets = {}
         enemies = {}
 
@@ -185,21 +195,28 @@ end
 function love.draw()
     push:apply('start')
 
-    love.graphics.setFont(smallFont)
-    love.graphics.print("Score: " .. tostring(score), 100, 10)
-    if isAlive then
-        love.graphics.draw(player.image, player.x, player.y)
+    if gameState == 'start' then
+        love.graphics.setFont(largeFont)
+        love.graphics.printf('Space Shooter CS50!', 0, 30, VIRTUAL_WIDTH, 'center')
+        love.graphics.setFont(smallFont)
+        love.graphics.printf('Press Enter to begin!', 0, 140, VIRTUAL_WIDTH, 'center')
+    elseif gameState == 'play' then
+        love.graphics.setFont(smallFont)
+        love.graphics.print("Score: " .. tostring(score), 100, 10)
 
-        for i, v in ipairs(bullets) do
-            love.graphics.draw(v.image, v.x, v.y)
+        if isAlive then
+            love.graphics.draw(player.image, player.x, player.y)
+
+            for i, v in ipairs(bullets) do
+                love.graphics.draw(v.image, v.x, v.y)
+            end
         end
         for i, v in ipairs(enemies) do
             love.graphics.setColor(v.color)
-            love.graphics.draw(v.image, v.x, v.y, 0, 0.3, 0.3)
-            -- v.rotation
+            love.graphics.draw(v.image, v.x, v.y)
         end
-    else
-        love.graphics.print("Press 'R' to restart", 70, VIRTUAL_HEIGHT / 2)
+    elseif gameState == 'done' then
+        love.graphics.printf('Press Enter to try again!', 0, 140, VIRTUAL_WIDTH, 'center')
     end
 
     push:apply('end')

@@ -35,7 +35,7 @@ enemyColor = {
 bullets = {}
 bulletImage = nil
 canShoot = true
-canShootTimerMax = 0.2
+canShootTimerMax = 5
 canShootTimer = canShootTimerMax 
 
 ---------------------==START==-----------------------
@@ -76,7 +76,6 @@ function love.load()
         ['boom'] = love.audio.newSource('sounds/boom.ogg', 'static'),
         ['shoot'] = love.audio.newSource('sounds/shoot.ogg', 'static'),
     }
-
 
     song:setLooping(false) -- set to true later
     --love.audio.play(song)
@@ -166,15 +165,32 @@ function love.update(dt)
             isAlive = false
         end
     end
+
+    -- reset game
+    if not isAlive and love.keyboard.isDown('r') then
+        bullets = {}
+        enemies = {}
+
+        canShootTimer = canShootTimerMax
+        enemyTimer = enemyTimerMax
+
+        player.x = VIRTUAL_WIDTH / 2 - player.width / 2
+        player.y = VIRTUAL_HEIGHT - player.height - 20
+
+        score = 0
+        isAlive = true
+    end
 end
 
 function love.draw()
     push:apply('start')
 
     love.graphics.setFont(smallFont)
-    love.graphics.print("Score: " .. tostring(score), 400, 10)
+    love.graphics.print("Score: " .. tostring(score), 100, 10)
     if isAlive then
         love.graphics.draw(player.image, player.x, player.y)
+    else
+        love.graphics.print("Press 'R' to restart", VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2)
     end
 
     for i, v in ipairs(bullets) do

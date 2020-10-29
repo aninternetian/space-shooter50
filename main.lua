@@ -1,13 +1,15 @@
 push = require 'push'
 
-WINDOW_WIDTH = 600
-WINDOW_HEIGHT = 900
+WINDOW_WIDTH = 720
+WINDOW_HEIGHT = 1280
 VIRTUAL_WIDTH = 243
 VIRTUAL_HEIGHT = 432
+
 
 math.randomseed(os.time())
 isAlive = true
 score = 0
+gameTime = 0
 
 -- player
 player = {}
@@ -70,12 +72,16 @@ function love.load()
     bulletWidth = bulletImage:getWidth()
     bulletHeight = bulletImage:getHeight()
 
+    shader = love.graphics.newShader('graphics/SkyShader.sh')
+
     song = love.audio.newSource('sounds/soundtrack.ogg', 'stream')
 
     sounds = {
         ['boom'] = love.audio.newSource('sounds/boom.ogg', 'static'),
         ['shoot'] = love.audio.newSource('sounds/shoot.ogg', 'static'),
     }
+
+
 
     gameState = 'start'
 
@@ -101,6 +107,11 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
+
+    gameTime = gameTime + dt
+    shader:send("screen_res", {VIRTUAL_WIDTH, VIRTUAL_HEIGHT})
+    shader:send("time", gameTime)
+
     if gameState == 'play' then
         -- player
         if love.keyboard.isDown('left', 'a') then
@@ -197,11 +208,16 @@ end
 function love.draw()
     push:apply('start')
 
+    love.graphics.setShader(shader)
+    love.graphics.rectangle('fill', 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
+    love.graphics.setShader() 
+    -- shader:send('screen_res', {VIRTUAL_WIDTH, VIRTUAL_HEIGHT})
+
     if gameState == 'start' then
         love.graphics.setFont(largeFont)
-        love.graphics.printf('Space Shooter CS50!', 0, 100, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf("Space Shooter CS50!", 0, 100, VIRTUAL_WIDTH, 'center')
         love.graphics.setFont(smallFont)
-        love.graphics.printf('Press Enter to begin!', 0, 250, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf("Press Enter to begin!", 0, 250, VIRTUAL_WIDTH, 'center')
     elseif gameState == 'play' then
         love.graphics.setFont(smallFont)
         love.graphics.print("Score: " .. tostring(score), 100, 10)
@@ -218,7 +234,7 @@ function love.draw()
             love.graphics.draw(v.image, v.x, v.y)
         end
     elseif gameState == 'done' then
-        love.graphics.printf('Press Enter to try again!', 0, 140, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf("Press Enter to try again!", 0, 140, VIRTUAL_WIDTH, 'center')
     end
 
     push:apply('end')

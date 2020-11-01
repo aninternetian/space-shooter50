@@ -1,10 +1,9 @@
 push = require 'push'
 
-WINDOW_WIDTH = 720
-WINDOW_HEIGHT = 1280
+WINDOW_WIDTH = 600
+WINDOW_HEIGHT = 900
 VIRTUAL_WIDTH = 243
 VIRTUAL_HEIGHT = 432
-
 
 math.randomseed(os.time())
 isAlive = true
@@ -55,8 +54,8 @@ function love.load()
 
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
-    smallFont = love.graphics.newFont('graphics/font.ttf', 5)
-    largeFont = love.graphics.newFont('graphics/font.ttf', 18)
+    smallFont = love.graphics.newFont('graphics/font.ttf', 10)
+    largeFont = love.graphics.newFont('graphics/font.ttf', 25)
     love.graphics.setFont(smallFont)
 
     push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
@@ -64,18 +63,15 @@ function love.load()
         resizable = true,
     })
 
-    -- enemyImage = love.graphics.newImage('graphics/enemy.png')
-    -- enemyWidth = enemyImage:getWidth()
-    -- enemyHeight = enemyImage:getHeight()
-    enemyWidth = 30
-    enemyHeight = 30
+    enemyImage = love.graphics.newImage('graphics/enemy.png')
+    enemyWidth = enemyImage:getWidth()
+    enemyHeight = enemyImage:getHeight()
 
     bulletImage = love.graphics.newImage('graphics/bullet.png')
     bulletWidth = bulletImage:getWidth()
     bulletHeight = bulletImage:getHeight()
 
     skyShader = love.graphics.newShader('graphics/SkyShader.sh')
-    enemyShader = love.graphics.newShader('graphics/AsteroidShader.sh')
 
     song = love.audio.newSource('sounds/soundtrack.ogg', 'stream')
 
@@ -86,8 +82,8 @@ function love.load()
 
     gameState = 'start'
 
-    song:setLooping(false) -- set to true later
-    --love.audio.play(song)
+    song:setLooping(true)
+    love.audio.play(song)
 end
 
 function love.resize(w, h)
@@ -108,10 +104,8 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
-
     gameTime = gameTime + dt
     skyShader:send("time", gameTime)
-    enemyShader:send("time", gameTime)
 
     if gameState == 'play' then
         -- player
@@ -159,22 +153,13 @@ function love.update(dt)
                 x = math.random(30, VIRTUAL_WIDTH - 30),
                 y = -30,
                 speed = 100,
-                seed = math.random(1, 9000),
-                rotation = math.random() * 2 - 0.5,
                 color = enemyColor[love.math.random(1, #enemyColor)],
-                shader = enemyShader
-                -- shaderTime = gameTime
+                rotation = math.random(0, 360)
             }
             table.insert(enemies, newEnemy)
         end
-
-        -- updating enemy movement
         for i, v in ipairs(enemies) do
             v.y = v.y + (v.speed * dt)
-            -- v.shader:send("seed", v.seed)
-            -- v.shader:send("speed", v.rotation)
-            -- v.shader:send("color", v.color)
-            -- v.shader:send("time", v.shaderTime)
             if v.y > VIRTUAL_HEIGHT + enemyHeight then
                 table.remove(enemies, i)
             end
@@ -225,9 +210,9 @@ function love.draw()
 
     if gameState == 'start' then
         love.graphics.setFont(largeFont)
-        love.graphics.printf("Space Shooter CS50!", 0, 100, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf('Space Shooter CS50!', 0, 100, VIRTUAL_WIDTH, 'center')
         love.graphics.setFont(smallFont)
-        love.graphics.printf("Press Enter to begin!", 0, 250, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf('Press Enter to begin!', 0, 250, VIRTUAL_WIDTH, 'center')
     elseif gameState == 'play' then
         love.graphics.setFont(smallFont)
         love.graphics.print("Score: " .. tostring(score), 100, 10)
@@ -240,13 +225,11 @@ function love.draw()
             end
         end
         for i, v in ipairs(enemies) do
-            -- love.graphics.setColor(v.color)
-            love.graphics.setShader(v.shader)
-            love.graphics.draw(v.shader, v.x, v.y)
-            -- love.graphics.rectangle('fill', v.x, v.y, 30, 30)
+            love.graphics.setColor(v.color)
+            love.graphics.draw(v.image, v.x, v.y, v.rotation)
         end
     elseif gameState == 'done' then
-        love.graphics.printf("Press Enter to try again!", 0, 140, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf('Press Enter to try again!', 0, 140, VIRTUAL_WIDTH, 'center')
     end
 
     push:apply('end')

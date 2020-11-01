@@ -64,15 +64,18 @@ function love.load()
         resizable = true,
     })
 
-    enemyImage = love.graphics.newImage('graphics/enemy.png')
-    enemyWidth = enemyImage:getWidth()
-    enemyHeight = enemyImage:getHeight()
+    -- enemyImage = love.graphics.newImage('graphics/enemy.png')
+    -- enemyWidth = enemyImage:getWidth()
+    -- enemyHeight = enemyImage:getHeight()
+    enemyWidth = 30
+    enemyHeight = 30
 
     bulletImage = love.graphics.newImage('graphics/bullet.png')
     bulletWidth = bulletImage:getWidth()
     bulletHeight = bulletImage:getHeight()
 
-    shader = love.graphics.newShader('graphics/SkyShader.sh')
+    skyShader = love.graphics.newShader('graphics/SkyShader.sh')
+    enemyShader = love.graphics.newShader('graphics/AsteroidShader.sh')
 
     song = love.audio.newSource('sounds/soundtrack.ogg', 'stream')
 
@@ -80,8 +83,6 @@ function love.load()
         ['boom'] = love.audio.newSource('sounds/boom.ogg', 'static'),
         ['shoot'] = love.audio.newSource('sounds/shoot.ogg', 'static'),
     }
-
-
 
     gameState = 'start'
 
@@ -109,8 +110,8 @@ end
 function love.update(dt)
 
     gameTime = gameTime + dt
-    shader:send("screen_res", {VIRTUAL_WIDTH, VIRTUAL_HEIGHT})
-    shader:send("time", gameTime)
+    skyShader:send("time", gameTime)
+    enemyShader:send("time", gameTime)
 
     if gameState == 'play' then
         -- player
@@ -158,12 +159,22 @@ function love.update(dt)
                 x = math.random(30, VIRTUAL_WIDTH - 30),
                 y = -30,
                 speed = 100,
-                color = enemyColor[love.math.random(1, #enemyColor)]
+                seed = math.random(1, 9000),
+                rotation = math.random() * 2 - 0.5,
+                color = enemyColor[love.math.random(1, #enemyColor)],
+                shader = enemyShader
+                -- shaderTime = gameTime
             }
             table.insert(enemies, newEnemy)
         end
+
+        -- updating enemy movement
         for i, v in ipairs(enemies) do
             v.y = v.y + (v.speed * dt)
+            -- v.shader:send("seed", v.seed)
+            -- v.shader:send("speed", v.rotation)
+            -- v.shader:send("color", v.color)
+            -- v.shader:send("time", v.shaderTime)
             if v.y > VIRTUAL_HEIGHT + enemyHeight then
                 table.remove(enemies, i)
             end
@@ -208,10 +219,9 @@ end
 function love.draw()
     push:apply('start')
 
-    love.graphics.setShader(shader)
+    love.graphics.setShader(skyShader)
     love.graphics.rectangle('fill', 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
     love.graphics.setShader() 
-    -- shader:send('screen_res', {VIRTUAL_WIDTH, VIRTUAL_HEIGHT})
 
     if gameState == 'start' then
         love.graphics.setFont(largeFont)
@@ -230,8 +240,10 @@ function love.draw()
             end
         end
         for i, v in ipairs(enemies) do
-            love.graphics.setColor(v.color)
-            love.graphics.draw(v.image, v.x, v.y)
+            -- love.graphics.setColor(v.color)
+            love.graphics.setShader(v.shader)
+            love.graphics.draw(v.shader, v.x, v.y)
+            -- love.graphics.rectangle('fill', v.x, v.y, 30, 30)
         end
     elseif gameState == 'done' then
         love.graphics.printf("Press Enter to try again!", 0, 140, VIRTUAL_WIDTH, 'center')

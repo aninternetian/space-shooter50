@@ -4,7 +4,7 @@
 
 #define HALF_PI = 1.5708
 
-uniform vec2 screen_res;
+//uniform vec2 screen_res;
 
 uniform float time;
 
@@ -20,12 +20,6 @@ vec2 hash22(vec2 st){
     st = vec2( dot(st,vec2(127.1,311.7)),
               dot(st,vec2(269.5,183.3)) );
     return -1.0 + 2.0*fract(sin(st)*43758.5453123);
-}
-
-
-float plot(vec2 st, float pct){
-  return  smoothstep( pct-0.02, pct, st.y) -
-          smoothstep( pct, pct+0.02, st.y);
 }
 
 
@@ -83,15 +77,6 @@ float nebula (vec2 st, float scale, vec2 t) {
 }
 
 
-float stars (vec2 st, float scale, float t) {
-    st += t;
-    st *= scale;
-    vec2 gst = fract(st * scale);
-    float f = gst.x * gst.y;//step(1. - noise(st.x * 100.) * noise(st.y * 100.), .1);
-    return f;
-}
-
-
 float starsBg (vec2 st, float scale, vec2 t) {
     t += 999.;
     st += t;
@@ -118,8 +103,8 @@ float meteorsBg (vec2 st, float scale, vec2 t) {
 vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords )
 {
 	float t = time;
-	vec2 uv = screen_coords/screen_res;	
-	vec2 duv = uv +  vec2(0, t * .05);
+	vec2 uv = 1.- (screen_coords - .5 * love_ScreenSize.xy)/love_ScreenSize.x;	
+    vec2 duv = uv +  vec2(0, t * .05);
 	float df = 0.;
     float strs = starsBg(duv, 5., vec2(-t, t) * .01) * 2.;
     float met1 = meteorsBg(duv, .65, vec2(-t * .5, t * 2.) * .05) *.7;

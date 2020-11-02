@@ -4,17 +4,27 @@
 
 #define HALF_PI 1.5708
 
-#define AMOUNT 5
+#define AMOUNT 3
 
 uniform float time;
 
 uniform vec2[AMOUNT] coords; 
 
-uniform float[AMOUNT] speeds;
+uniform float[AMOUNT] rotations;
 
 uniform float[AMOUNT] seeds;
 
 uniform vec3[AMOUNT] colors;
+
+
+float normUp (in float val) {
+	return val * .5 + .5;
+}
+
+
+vec2 normUp (in vec2 val) {
+	return val * .5 + .5;
+}
 
 
 float hash21 (in vec2 st) {
@@ -94,9 +104,10 @@ float asteroid (in vec2 st, float seed, float angle, out float otl, out float ma
 }
 
 
-vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords )
+vec4 effect( vec4 rgb, Image texture, vec2 texture_coords, vec2 screen_coords )
 {
-	vec2 uv = 1.- (screen_coords - .5 * love_ScreenSize.xy)/love_ScreenSize.x;		
+    float t = time;
+	vec2 uv = (1.- screen_coords) / love_ScreenSize.x;		
 	vec3 col = vec3(0);
 	
 	float df = 0;
@@ -104,18 +115,21 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
 	for (int i = 0; i < AMOUNT; i++) {
 		float asMsk, asOtl;
 		float astr = asteroid(
-			uv * 3. + coords[i], seeds[i], 
-			times[i] * speed *.25,
+			(uv + coords[i]) * 3., seeds[i], 
+			t * rotations[i] *.25,
 			asOtl, asMsk
 			);
 		df += astr;
+
+        col += seeds[0] * rotations[0] * .000000001;
+
+        col += vec3(
+            normUp(sin(astr + asMsk + asOtl * 5.)), 
+            normUp(cos(astr - asMsk * asOtl * abs(sin(t * .5) * TWO_PI))), 
+            normUp(sin((astr - asOtl * astr - asMsk) * 24.))
+        ) * sin(asMsk - asOtl) + astr * colors[i];
 	}	
-	
-	col += vec3(
-        astr + asMsk * asOtl, 
-        astr + asMsk - asOtl, 
-        astr * asOtl + asMsk
-    ) * (asMsk - asOtl) + astr * color;
-	
-    return vec4(col, sign(df)); 
+    
+    return vec4(col, sign(df));
+    //return vec4(vec3(dot(uv, uv)), 1. + sin(t) * .0000001);//sign(df)); 
 }

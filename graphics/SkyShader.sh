@@ -4,8 +4,6 @@
 
 #define HALF_PI = 1.5708
 
-//uniform vec2 screen_res;
-
 uniform float time;
 
 
@@ -20,6 +18,17 @@ vec2 hash22(vec2 st){
     st = vec2( dot(st,vec2(127.1,311.7)),
               dot(st,vec2(269.5,183.3)) );
     return -1.0 + 2.0*fract(sin(st)*43758.5453123);
+}
+
+
+
+float normUp (in float val) {
+	return val * .5 + .5;
+}
+
+
+vec2 normUp (in vec2 val) {
+	return val * .5 + .5;
 }
 
 
@@ -62,18 +71,20 @@ float perlin(vec2 st) {
 }
 
 
-
 mat2 rotate2d(float angle){
     return mat2(cos(angle),-sin(angle),
                 sin(angle),cos(angle));
 }
 
 
-
-float nebula (vec2 st, float scale, vec2 t) {
-    st += t;
-    float f = perlin(st * scale);
-	return f;
+float stars (in vec2 p, out float id, float s) {
+    p *= 3.;
+    vec2 gp = 1.5 - fract(p * s) * 3.;
+    vec2 gi = floor(p * s);
+    id = noise2d(gi * 333.33) + .01;
+    gp = rotate2d(time * 3. * (id * 2. - .5)) * gp;
+    float df = 1. - pow(dot(gp, gp) * gp.x * gp.y * 5000. * id, 2.);
+	return min(1., df * max(0., hash21(gi) - .9) * 16.);
 }
 
 
@@ -104,18 +115,21 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
 {
 	float t = time;
 	vec2 uv = 1.- (screen_coords - .5 * love_ScreenSize.xy)/love_ScreenSize.x;	
-    vec2 duv = uv +  vec2(0, t * .05);
+	vec2 duv = uv +  vec2(0, t * .05);
 	float df = 0.;
-    float strs = starsBg(duv, 5., vec2(-t, t) * .01) * 2.;
+    float sId; 
+    float strs = stars(uv + vec2(0, t * .065), sId, 6.);
+    float farstrs = starsBg(duv, 6., vec2(-t, t) * .01) * 2.;
     float met1 = meteorsBg(duv, .65, vec2(-t * .5, t * 2.) * .05) *.7;
     float met2 = meteorsBg(duv, .75, vec2(t * .1)) * noise(duv.y * 2.) * .75;
-    float nbl = nebula(duv, 8., vec2(0.)) * .035;
 	
 	df = max(met1, met2);
     df = max(df, strs - df);
 	
-	vec3 col = vec3(nbl * .25, nbl * .2, nbl);
+	vec3 col = vec3(abs(sin(farstrs * TWO_PI)) * .65, abs(sin(farstrs * PI)), min(1., farstrs * 2.));
+    col += vec3(strs * normUp(sin(sId * TWO_PI)), strs * normUp(sin(sId)), strs * normUp(sin(sId)));
+	
 	col = max(col, vec3(df));
 	
-    return vec4(col, 1.0);
+    return vec4(col, 1.0); 
 }

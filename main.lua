@@ -1,10 +1,5 @@
-push = require 'push'
-
-WINDOW_WIDTH = 720
-WINDOW_HEIGHT = 1280
-VIRTUAL_WIDTH = 243
-VIRTUAL_HEIGHT = 432
-
+WINDOW_WIDTH = 628
+WINDOW_HEIGHT = 1200
 
 math.randomseed(os.time())
 isAlive = true
@@ -16,21 +11,21 @@ player = {}
 player.image = love.graphics.newImage('graphics/player.png')
 player.width = player.image:getWidth()
 player.height = player.image:getHeight()
-player.x = VIRTUAL_WIDTH / 2 - player.width / 2
-player.y = VIRTUAL_HEIGHT - player.height - 20
+player.x = WINDOW_WIDTH / 2
+player.y = WINDOW_HEIGHT - WINDOW_HEIGHT * 0.2
 player.speed = 200
 
--- enemy
+-- asteroid
 enemies = {}
-enemyImage = nil
-enemyTimerMax = 1.5
-enemyTimer = enemyTimerMax
-enemyColor = {
-    {247 / 255, 232 / 255, 225 / 255, 255 / 255},
-    {185 / 255, 158 / 255, 146 / 255, 255 / 255},
-    {171 / 255, 160 / 255, 155 / 255, 255 / 255},
-    {54 / 255, 48 / 255, 46 / 255, 255 / 255},
-    {140 / 255, 131 / 255, 127 / 255, 255 / 255},
+asteroidImage = nil
+asteroidTimerMax = 1.5
+asteroidTimer = asteroidTimerMax
+asteroidColor = {
+    {247 / 255, 232 / 255, 225 / 255},--, 255 / 255},
+    {185 / 255, 158 / 255, 146 / 255},--, 255 / 255},
+    {171 / 255, 160 / 255, 155 / 255},--, 255 / 255},
+    {54 / 255, 48 / 255, 46 / 255},--, 255 / 255},
+    {140 / 255, 131 / 255, 127 / 255}--, 255 / 255},
 }
 
 -- bullet
@@ -53,29 +48,29 @@ end
 function love.load()
     love.window.setTitle('Space Shooter 50')
 
-    love.graphics.setDefaultFilter('nearest', 'nearest')
+    -- love.graphics.setDefaultFilter('nearest', 'nearest')
 
-    smallFont = love.graphics.newFont('graphics/font.ttf', 5)
-    largeFont = love.graphics.newFont('graphics/font.ttf', 18)
+    smallFont = love.graphics.newFont('graphics/font.ttf', 15)
+    largeFont = love.graphics.newFont('graphics/font.ttf', 50)
     love.graphics.setFont(smallFont)
 
-    push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
+    love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
         fullscreen = false,
         resizable = true,
-    })
+})
 
     -- enemyImage = love.graphics.newImage('graphics/enemy.png')
     -- enemyWidth = enemyImage:getWidth()
     -- enemyHeight = enemyImage:getHeight()
-    enemyWidth = 30
-    enemyHeight = 30
+    asteroidWidth = 30
+    asteroidHeight = 30
 
     bulletImage = love.graphics.newImage('graphics/bullet.png')
     bulletWidth = bulletImage:getWidth()
     bulletHeight = bulletImage:getHeight()
 
     skyShader = love.graphics.newShader('graphics/SkyShader.sh')
-    enemyShader = love.graphics.newShader('graphics/AsteroidShader.sh')
+    asteroidsShader = love.graphics.newShader('graphics/AsteroidsShader.sh')
 
     song = love.audio.newSource('sounds/soundtrack.ogg', 'stream')
 
@@ -90,14 +85,13 @@ function love.load()
     --love.audio.play(song)
 end
 
-function love.resize(w, h)
-    push:resize(w, h)
-end
-
-function love.keypressed(key)
+function love.keypressed(key, u)
     if key == 'escape' then
         love.event.quit()
     end
+    if key == "rctrl" then
+        debug.debug()
+     end
     if key == 'enter' or key == 'return' then
         if gameState == 'start' then
             gameState = 'play'
@@ -108,10 +102,25 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
-
     gameTime = gameTime + dt
     skyShader:send("time", gameTime)
-    enemyShader:send("time", gameTime)
+
+    coords = {{0,0}, {.5, .5}, {1, 1,}}
+    seeds = {7, 9, 79}
+    rotations = {-1, 0, 1}
+    cols = {{.7, .9, .79}, {.7, .2, .4}, {.27, .62, .44}}
+    --for i = 0, 3 do
+        --coords[i] = {.5, .5}
+        --seeds[i] = math.random(1, 9000)
+        --rotations[i] = (math.random() * 2 - 0.5) * 0.01
+        --cols[i] = asteroidColor[love.math.random(1, #asteroidColor)]
+    --end
+
+    asteroidsShader:send("time", gameTime)
+    asteroidsShader:send("coords", {0,0}, {.5, .5}, {1, 1})--unpack(coords))
+    asteroidsShader:send("seeds", 7, 9, 79)
+    asteroidsShader:send("rotations", -1, 0, 1)
+    asteroidsShader:send("colors", {.7, .9, .79}, {.7, .2, .4}, {.27, .62, .44})
 
     if gameState == 'play' then
         -- player
@@ -120,7 +129,7 @@ function love.update(dt)
                 player.x = player.x - (player.speed * dt)
             end
         elseif love.keyboard.isDown('right', 'd') then
-            if player.x < (VIRTUAL_WIDTH - player.width) then
+            if player.x < (WINDOW_WIDTH - player.width) then
                 player.x = player.x + (player.speed * dt)
             end
         end
@@ -150,47 +159,41 @@ function love.update(dt)
             end
         end
 
-        -- enemy
-        enemyTimer = enemyTimer - (1 * dt)
-        if enemyTimer < 0 then
-            enemyTimer = enemyTimerMax
-            newEnemy = {
-                image = enemyImage,
-                x = math.random(30, VIRTUAL_WIDTH - 30),
+        -- asteroid
+        asteroidTimer = asteroidTimer - (1 * dt)
+        if asteroidTimer < 0 then
+            asteroidTimer = asteroidTimerMax
+            newAsteroid = {
+                image = asteroidImage,
+                x = math.random(30, WINDOW_WIDTH - 30),
                 y = -30,
                 speed = 100,
                 seed = math.random(1, 9000),
                 rotation = math.random() * 2 - 0.5,
-                color = enemyColor[love.math.random(1, #enemyColor)],
-                shader = enemyShader
-                -- shaderTime = gameTime
+                color = asteroidColor[love.math.random(1, #asteroidColor)]
             }
-            table.insert(enemies, newEnemy)
+            table.insert(enemies, newAsteroid)
         end
 
-        -- updating enemy movement
+        -- updating asteroid movement
         for i, v in ipairs(enemies) do
             v.y = v.y + (v.speed * dt)
-            -- v.shader:send("seed", v.seed)
-            -- v.shader:send("speed", v.rotation)
-            -- v.shader:send("color", v.color)
-            -- v.shader:send("time", v.shaderTime)
-            if v.y > VIRTUAL_HEIGHT + enemyHeight then
+            if v.y > WINDOW_WIDTH + asteroidHeight then
                 table.remove(enemies, i)
             end
         end
 
         -- collision
-        for i, enemy in ipairs(enemies) do
+        for i, asteroid in ipairs(enemies) do
             for j, bullet in ipairs(bullets) do
-                if collision(enemy.x, enemy.y, enemyWidth, enemyHeight, bullet.x, bullet.y, bulletWidth, bulletHeight) then
+                if collision(asteroid.x, asteroid.y, asteroidWidth, asteroidHeight, bullet.x, bullet.y, bulletWidth, bulletHeight) then
                     table.remove(bullets, j)
                     table.remove(enemies, i)
                     score = score + 1
                     sounds['boom']:play()
                 end
             end
-            if collision(enemy.x, enemy.y, enemyWidth, enemyHeight, player.x, player.y, player.width, player.height) and isAlive then
+            if collision(asteroid.x, asteroid.y, asteroidWidth, asteroidHeight, player.x, player.y, player.width, player.height) and isAlive then
                 table.remove(enemies, i)
                 sounds['boom']:play()
                 isAlive = false
@@ -205,10 +208,10 @@ function love.update(dt)
             enemies = {}
 
             canShootTimer = canShootTimerMax
-            enemyTimer = enemyTimerMax
+            asteroidTimer = asteroidTimerMax
 
-            player.x = VIRTUAL_WIDTH / 2 - player.width / 2
-            player.y = VIRTUAL_HEIGHT - player.height - 20
+            player.x = WINDOW_WIDTH / 2 - player.width / 2
+            player.y = WINDOW_HEIGHT - player.height - 20
 
             score = 0
             isAlive = true
@@ -217,17 +220,19 @@ function love.update(dt)
 end
 
 function love.draw()
-    push:apply('start')
-
     love.graphics.setShader(skyShader)
-    love.graphics.rectangle('fill', 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
+    love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
     love.graphics.setShader() 
+
+    love.graphics.setShader(asteroidsShader)
+    love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+    love.graphics.setShader()
 
     if gameState == 'start' then
         love.graphics.setFont(largeFont)
-        love.graphics.printf("Space Shooter CS50!", 0, 100, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf("Space Shooter CS50!", 0, WINDOW_HEIGHT / 4, WINDOW_WIDTH, 'center')
         love.graphics.setFont(smallFont)
-        love.graphics.printf("Press Enter to begin!", 0, 250, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf("Press Enter to begin!", 0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, 'center')
     elseif gameState == 'play' then
         love.graphics.setFont(smallFont)
         love.graphics.print("Score: " .. tostring(score), 100, 10)
@@ -239,15 +244,8 @@ function love.draw()
                 love.graphics.draw(v.image, v.x, v.y)
             end
         end
-        for i, v in ipairs(enemies) do
-            -- love.graphics.setColor(v.color)
-            love.graphics.setShader(v.shader)
-            love.graphics.draw(v.shader, v.x, v.y)
-            -- love.graphics.rectangle('fill', v.x, v.y, 30, 30)
-        end
     elseif gameState == 'done' then
-        love.graphics.printf("Press Enter to try again!", 0, 140, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf("Press Enter to try again!", 0, 140, WINDOW_WIDTH, 'center')
     end
 
-    push:apply('end')
 end

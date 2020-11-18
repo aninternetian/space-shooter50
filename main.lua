@@ -16,16 +16,15 @@ player.y = WINDOW_HEIGHT - WINDOW_HEIGHT * 0.2
 player.speed = 200
 
 -- asteroid
-enemies = {}
-asteroidImage = nil
+asteroids = {}
 asteroidTimerMax = 1.5
 asteroidTimer = asteroidTimerMax
-asteroidColor = {
-    {247 / 255, 232 / 255, 225 / 255},--, 255 / 255},
-    {185 / 255, 158 / 255, 146 / 255},--, 255 / 255},
-    {171 / 255, 160 / 255, 155 / 255},--, 255 / 255},
-    {54 / 255, 48 / 255, 46 / 255},--, 255 / 255},
-    {140 / 255, 131 / 255, 127 / 255}--, 255 / 255},
+asteroidsColor = {
+    {247 / 255, 232 / 255, 225 / 255},
+    {185 / 255, 158 / 255, 146 / 255},
+    {171 / 255, 160 / 255, 155 / 255},
+    {54 / 255, 48 / 255, 46 / 255},
+    {140 / 255, 131 / 255, 127 / 255}
 }
 
 -- bullet
@@ -36,14 +35,6 @@ canShootTimerMax = 5
 canShootTimer = canShootTimerMax 
 
 ---------------------==START==-----------------------
-
--- Collision detection from http://love2d.org/wiki/BoundingBox.lua
-function collision(x1,y1,w1,h1, x2,y2,w2,h2)
-    return x1 < x2+w2 and
-           x2 < x1+w1 and
-           y1 < y2+h2 and
-           y2 < y1+h1
-end
 
 function love.load()
     love.window.setTitle('Space Shooter 50')
@@ -59,11 +50,17 @@ function love.load()
         resizable = true,
 })
 
-    -- enemyImage = love.graphics.newImage('graphics/enemy.png')
-    -- enemyWidth = enemyImage:getWidth()
-    -- enemyHeight = enemyImage:getHeight()
-    asteroidWidth = 30
-    asteroidHeight = 30
+    for i = 1, 3 do
+        asteroid = {
+            x = math.random(),
+            y = -0.5,
+            speed = 0.1,
+            seed = math.random(1, 9000),
+            rotation = math.random() * 2 - 0.5,
+            color = asteroidsColor[love.math.random(1, #asteroidsColor)]
+        }
+        table.insert(asteroids, asteroid)
+    end
 
     bulletImage = love.graphics.newImage('graphics/bullet.png')
     bulletWidth = bulletImage:getWidth()
@@ -105,24 +102,29 @@ function love.update(dt)
     gameTime = gameTime + dt
     skyShader:send("time", gameTime)
 
-    coords = {{0,0}, {.5, .5}, {1, 1,}}
-    seeds = {7, 9, 79}
-    rotations = {-1, 0, 1}
-    cols = {{.7, .9, .79}, {.7, .2, .4}, {.27, .62, .44}}
-    --for i = 0, 3 do
-        --coords[i] = {.5, .5}
-        --seeds[i] = math.random(1, 9000)
-        --rotations[i] = (math.random() * 2 - 0.5) * 0.01
-        --cols[i] = asteroidColor[love.math.random(1, #asteroidColor)]
-    --end
+    -- coords = {{0,0}, {.5, .5}, {1, 1,}}
+    -- seeds = {7, 9, 79}
+    -- rotations = {-1, 0, 1}
+    -- cols = {{.7, .9, .79}, {.7, .2, .4}, {.27, .62, .44}}
 
-    asteroidsShader:send("time", gameTime)
-    asteroidsShader:send("coords", {0,0}, {.5, .5}, {1, 1})--unpack(coords))
-    asteroidsShader:send("seeds", 7, 9, 79)
-    asteroidsShader:send("rotations", -1, 0, 1)
-    asteroidsShader:send("colors", {.7, .9, .79}, {.7, .2, .4}, {.27, .62, .44})
+    -- asteroidsShader:send("time", gameTime)
+    -- asteroidsShader:send("coords", {0,0}, {.5, .5}, {1, 1})--unpack(coords))
+    -- asteroidsShader:send("seeds", 7, 9, 79)
+    -- asteroidsShader:send("rotations", -1, 0, 1)
+    -- asteroidsShader:send("colors", {.7, .9, .79}, {.7, .2, .4}, {.27, .62, .44})
 
     if gameState == 'play' then
+
+        astrXY = {}
+        for i, astr in ipairs(asteroids) do
+            astr.y = astr.y + (astr.speed * dt)
+            table.insert(astrXY, {astr.x, astr.y})
+        end
+        print(astrXY[1][2])
+        
+        asteroidsShader:send("coords", unpack(astrXY))
+            -- asteroidsShader:send("coords", map(asteroids, function(item) return item.y end))
+
         -- player
         if love.keyboard.isDown('left', 'a') then
             if player.x > 0 then -- player doesn't go off screen
@@ -159,53 +161,11 @@ function love.update(dt)
             end
         end
 
-        -- asteroid
-        asteroidTimer = asteroidTimer - (1 * dt)
-        if asteroidTimer < 0 then
-            asteroidTimer = asteroidTimerMax
-            newAsteroid = {
-                image = asteroidImage,
-                x = math.random(30, WINDOW_WIDTH - 30),
-                y = -30,
-                speed = 100,
-                seed = math.random(1, 9000),
-                rotation = math.random() * 2 - 0.5,
-                color = asteroidColor[love.math.random(1, #asteroidColor)]
-            }
-            table.insert(enemies, newAsteroid)
-        end
-
-        -- updating asteroid movement
-        for i, v in ipairs(enemies) do
-            v.y = v.y + (v.speed * dt)
-            if v.y > WINDOW_WIDTH + asteroidHeight then
-                table.remove(enemies, i)
-            end
-        end
-
-        -- collision
-        for i, asteroid in ipairs(enemies) do
-            for j, bullet in ipairs(bullets) do
-                if collision(asteroid.x, asteroid.y, asteroidWidth, asteroidHeight, bullet.x, bullet.y, bulletWidth, bulletHeight) then
-                    table.remove(bullets, j)
-                    table.remove(enemies, i)
-                    score = score + 1
-                    sounds['boom']:play()
-                end
-            end
-            if collision(asteroid.x, asteroid.y, asteroidWidth, asteroidHeight, player.x, player.y, player.width, player.height) and isAlive then
-                table.remove(enemies, i)
-                sounds['boom']:play()
-                isAlive = false
-                gameState = 'done'
-            end
-        end
-
         -- reset game
         if not isAlive then
             -- gameState = 'done'
             bullets = {}
-            enemies = {}
+            asteroids = {}
 
             canShootTimer = canShootTimerMax
             asteroidTimer = asteroidTimerMax
@@ -249,3 +209,22 @@ function love.draw()
     end
 
 end
+
+-- copy paste code from https://stackoverflow.com/a/11671820
+function map(tbl, f)
+    local t = {}
+    for k,v in pairs(tbl) do
+        t[k] = f(v)
+    end
+    return t
+end
+
+-- ofc you have to write your own function for everything
+-- https://stackoverflow.com/questions/2705793/how-to-get-number-of-entries-in-a-lua-table
+function tablelength(T)
+    local count = 0
+    for _ in pairs(T) do count = count + 1 end
+    return count
+  end
+
+  

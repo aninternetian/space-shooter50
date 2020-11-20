@@ -115,7 +115,7 @@ vec4 effect( vec4 rgb, Image texture, vec2 texture_coords, vec2 screen_coords )
 	for (int i = 0; i < AMOUNT; i++) {
 		float asMsk, asOtl;
 		float astr = asteroid(
-			(uv + coords[i]) * 3., seeds[i], 
+			(uv + coords[i]) * 5., seeds[i], 
 			t * rotations[i] *.25,
 			asOtl, asMsk
 			);

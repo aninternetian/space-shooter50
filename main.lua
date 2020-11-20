@@ -15,17 +15,18 @@ player.x = WINDOW_WIDTH / 2
 player.y = WINDOW_HEIGHT - WINDOW_HEIGHT * 0.2
 player.speed = 200
 
+print(test())
 -- asteroid
 asteroids = {}
 asteroidTimerMax = 1.5
 asteroidTimer = asteroidTimerMax
-asteroidsColor = {
-    {247 / 255, 232 / 255, 225 / 255},
-    {185 / 255, 158 / 255, 146 / 255},
-    {171 / 255, 160 / 255, 155 / 255},
-    {54 / 255, 48 / 255, 46 / 255},
-    {140 / 255, 131 / 255, 127 / 255}
-}
+-- asteroidsColor = {
+--     hexConv('#FAD400'),
+--     hexConv('#DBA100'),
+--     hexConv('#F09400'),
+--     hexConv('#DB6600'),
+--     hexConv('#FF5208')
+-- }
 
 -- bullet
 bullets = {}
@@ -48,19 +49,12 @@ function love.load()
     love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
         fullscreen = false,
         resizable = true,
-})
+    })
 
     for i = 1, 3 do
-        asteroid = {
-            x = math.random(),
-            y = -0.5,
-            speed = 0.1,
-            seed = math.random(1, 9000),
-            rotation = math.random() * 2 - 0.5,
-            color = asteroidsColor[love.math.random(1, #asteroidsColor)]
-        }
-        table.insert(asteroids, asteroid)
+        table.insert(asteroids, initAstr())
     end
+    asteroids[1].y = -.1
 
     bulletImage = love.graphics.newImage('graphics/bullet.png')
     bulletWidth = bulletImage:getWidth()
@@ -102,28 +96,33 @@ function love.update(dt)
     gameTime = gameTime + dt
     skyShader:send("time", gameTime)
 
-    -- coords = {{0,0}, {.5, .5}, {1, 1,}}
-    -- seeds = {7, 9, 79}
-    -- rotations = {-1, 0, 1}
-    -- cols = {{.7, .9, .79}, {.7, .2, .4}, {.27, .62, .44}}
-
-    -- asteroidsShader:send("time", gameTime)
-    -- asteroidsShader:send("coords", {0,0}, {.5, .5}, {1, 1})--unpack(coords))
-    -- asteroidsShader:send("seeds", 7, 9, 79)
-    -- asteroidsShader:send("rotations", -1, 0, 1)
-    -- asteroidsShader:send("colors", {.7, .9, .79}, {.7, .2, .4}, {.27, .62, .44})
-
     if gameState == 'play' then
 
         astrXY = {}
+        astRot = {}
+        seeds = {}
+        colors = {}
         for i, astr in ipairs(asteroids) do
             astr.y = astr.y + (astr.speed * dt)
             table.insert(astrXY, {astr.x, astr.y})
+            table.insert(astRot, astr.rotation)
+            table.insert(seeds, astr.seed)
+            table.insert(colors, astr.color)
+            -- if astr.y > 1.2 then
+            --     -- circle collision stolen from https://sheepolution.com/learn/book/21
+            --     distance = math.sqrt((astr.x - player.x)^2 + (astr.y - player.y)^2)
+            --     isAlive = distance < p1.size + p2.size
+            -- end
+            if astr.y > 1.8 then
+                asteroids[i] = initAstr()
+            end
         end
-        print(astrXY[1][2])
-        
+
+        asteroidsShader:send("time", gameTime)
         asteroidsShader:send("coords", unpack(astrXY))
-            -- asteroidsShader:send("coords", map(asteroids, function(item) return item.y end))
+        asteroidsShader:send("rotations", unpack(astRot))
+        asteroidsShader:send("seeds", unpack(seeds))
+        asteroidsShader:send("colors", unpack(colors))
 
         -- player
         if love.keyboard.isDown('left', 'a') then
@@ -184,10 +183,6 @@ function love.draw()
     love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
     love.graphics.setShader() 
 
-    love.graphics.setShader(asteroidsShader)
-    love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
-    love.graphics.setShader()
-
     if gameState == 'start' then
         love.graphics.setFont(largeFont)
         love.graphics.printf("Space Shooter CS50!", 0, WINDOW_HEIGHT / 4, WINDOW_WIDTH, 'center')
@@ -196,6 +191,10 @@ function love.draw()
     elseif gameState == 'play' then
         love.graphics.setFont(smallFont)
         love.graphics.print("Score: " .. tostring(score), 100, 10)
+
+        love.graphics.setShader(asteroidsShader)
+        love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+        love.graphics.setShader()
 
         if isAlive then
             love.graphics.draw(player.image, player.x, player.y)
@@ -207,7 +206,24 @@ function love.draw()
     elseif gameState == 'done' then
         love.graphics.printf("Press Enter to try again!", 0, 140, WINDOW_WIDTH, 'center')
     end
+end
 
+function test()
+    return "test"
+end
+
+function initAstr()
+    asteroid = {
+        x = math.random(0, 10) * .1,
+        y = math.random(-1, -15) * 0.1,
+        speed = 0.2,
+        seed = math.random(1, 9000),
+        rotation = math.random() * 2 - 0.5,
+        color = asteroidsColor[love.math.random(1, #asteroidsColor)]
+    }
+    asteroid.x = math.min(math.max(.1, asteroid.x), .9)
+    -- asteroid.y = math.min(math.max(.9, asteroid.y), .1)
+    return asteroid
 end
 
 -- copy paste code from https://stackoverflow.com/a/11671820
@@ -225,6 +241,4 @@ function tablelength(T)
     local count = 0
     for _ in pairs(T) do count = count + 1 end
     return count
-  end
-
-  
+end

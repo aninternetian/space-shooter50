@@ -1,5 +1,7 @@
-WINDOW_WIDTH = 628
-WINDOW_HEIGHT = 1200
+WINDOW_WIDTH = 640
+WINDOW_HEIGHT = 960
+-- 628
+-- 1200
 
 math.randomseed(os.time())
 isAlive = true
@@ -14,19 +16,6 @@ player.height = player.image:getHeight()
 player.x = WINDOW_WIDTH / 2
 player.y = WINDOW_HEIGHT - WINDOW_HEIGHT * 0.2
 player.speed = 200
-
-print(test())
--- asteroid
-asteroids = {}
-asteroidTimerMax = 1.5
-asteroidTimer = asteroidTimerMax
--- asteroidsColor = {
---     hexConv('#FAD400'),
---     hexConv('#DBA100'),
---     hexConv('#F09400'),
---     hexConv('#DB6600'),
---     hexConv('#FF5208')
--- }
 
 -- bullet
 bullets = {}
@@ -50,6 +39,19 @@ function love.load()
         fullscreen = false,
         resizable = true,
     })
+
+    -- asteroid
+  
+    color1 = test('#FFC854')
+    color2 = test('#FF960D')
+    color3 = test('#F56600')
+    color4 = test('#B03509')
+    color5 = test('#FF1D00')
+
+    asteroids = {}
+    asteroidTimerMax = 1.5
+    asteroidTimer = asteroidTimerMax
+    asteroidsColor = {color1, color2, color3, color4, color5}
 
     for i = 1, 3 do
         table.insert(asteroids, initAstr())
@@ -109,9 +111,9 @@ function love.update(dt)
             table.insert(seeds, astr.seed)
             table.insert(colors, astr.color)
             -- if astr.y > 1.2 then
-            --     -- circle collision stolen from https://sheepolution.com/learn/book/21
-            --     distance = math.sqrt((astr.x - player.x)^2 + (astr.y - player.y)^2)
-            --     isAlive = distance < p1.size + p2.size
+            --      -- circle collision stolen from https://sheepolution.com/learn/book/21
+            --      distance = math.sqrt((astr.x - player.x)^2 + (astr.y - player.y)^2)
+            --      isAlive = distance < p1.size + p2.size
             -- end
             if astr.y > 1.8 then
                 asteroids[i] = initAstr()
@@ -208,8 +210,10 @@ function love.draw()
     end
 end
 
-function test()
-    return "test"
+-- https://gist.github.com/jasonbradley/4357406
+function test(hex)
+    hex = hex:gsub("#","")
+    return {tonumber(hex:sub(1,2), 17) / 255, tonumber(hex:sub(3,4), 17) / 255, tonumber(hex:sub(5,6), 17) / 255}
 end
 
 function initAstr()

@@ -39,7 +39,6 @@ function love.load()
     bulletHeight = bulletImage:getHeight()
 
     -- asteroid
-  
     color1 = hex2rgb('#FFC854')
     color2 = hex2rgb('#FF960D')
     color3 = hex2rgb('#F56600')

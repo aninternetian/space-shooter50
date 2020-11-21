@@ -57,7 +57,7 @@ function love.load()
     asteroidTimer = asteroidTimerMax
     asteroidsColor = {color1, color2, color3, color4, color5}
 
-    for i = 1, 3 do
+    for i = 1, 10 do
         table.insert(asteroids, initAstr())
     end
     asteroids[1].y = -.1
@@ -100,6 +100,19 @@ function love.update(dt)
 
     if gameState == 'play' then
 
+        -- player
+        if love.keyboard.isDown('left', 'a') then
+            if player.x > 0 then -- player doesn't go off screen
+                player.x = player.x - (player.speed * dt)
+            end
+        elseif love.keyboard.isDown('right', 'd') then
+            if player.x < (WINDOW_WIDTH - player.width) then
+                player.x = player.x + (player.speed * dt)
+            end
+        end
+
+        -- asteroid
+
         astrXY = {}
         astRot = {}
         seeds = {}
@@ -125,17 +138,6 @@ function love.update(dt)
         asteroidsShader:send("rotations", unpack(astRot))
         asteroidsShader:send("seeds", unpack(seeds))
         asteroidsShader:send("colors", unpack(colors))
-
-        -- player
-        if love.keyboard.isDown('left', 'a') then
-            if player.x > 0 then -- player doesn't go off screen
-                player.x = player.x - (player.speed * dt)
-            end
-        elseif love.keyboard.isDown('right', 'd') then
-            if player.x < (WINDOW_WIDTH - player.width) then
-                player.x = player.x + (player.speed * dt)
-            end
-        end
 
         -- bullet
         canShootTimer = canShootTimer - (1 * dt)

@@ -4,7 +4,7 @@
 
 #define HALF_PI 1.5708
 
-#define AMOUNT 3
+#define AMOUNT 10
 
 uniform float time;
 

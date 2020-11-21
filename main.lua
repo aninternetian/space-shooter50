@@ -8,22 +8,6 @@ isAlive = true
 score = 0
 gameTime = 0
 
--- player
-player = {}
-player.image = love.graphics.newImage('graphics/player.png')
-player.width = player.image:getWidth()
-player.height = player.image:getHeight()
-player.x = WINDOW_WIDTH / 2
-player.y = WINDOW_HEIGHT - WINDOW_HEIGHT * 0.2
-player.speed = 200
-
--- bullet
-bullets = {}
-bulletImage = nil
-canShoot = true
-canShootTimerMax = 5
-canShootTimer = canShootTimerMax 
-
 ---------------------==START==-----------------------
 
 function love.load()
@@ -40,13 +24,33 @@ function love.load()
         resizable = true,
     })
 
+    -- player
+    player = {}
+    player.image = love.graphics.newImage('graphics/player.png')
+    player.width = player.image:getWidth()
+    player.height = player.image:getHeight()
+    player.x = WINDOW_WIDTH / 2 - player.width / 2
+    player.y = WINDOW_HEIGHT - player.height - 40
+    player.speed = 200
+
+    -- bullet
+    bullets = {}
+    bulletImage = nil
+    canShoot = true
+    canShootTimerMax = 5
+    canShootTimer = canShootTimerMax 
+
+    bulletImage = love.graphics.newImage('graphics/bullet.png')
+    bulletWidth = bulletImage:getWidth()
+    bulletHeight = bulletImage:getHeight()
+
     -- asteroid
   
-    color1 = test('#FFC854')
-    color2 = test('#FF960D')
-    color3 = test('#F56600')
-    color4 = test('#B03509')
-    color5 = test('#FF1D00')
+    color1 = hex2rgb('#FFC854')
+    color2 = hex2rgb('#FF960D')
+    color3 = hex2rgb('#F56600')
+    color4 = hex2rgb('#B03509')
+    color5 = hex2rgb('#FF1D00')
 
     asteroids = {}
     asteroidTimerMax = 1.5
@@ -58,14 +62,10 @@ function love.load()
     end
     asteroids[1].y = -.1
 
-    bulletImage = love.graphics.newImage('graphics/bullet.png')
-    bulletWidth = bulletImage:getWidth()
-    bulletHeight = bulletImage:getHeight()
-
     skyShader = love.graphics.newShader('graphics/SkyShader.sh')
     asteroidsShader = love.graphics.newShader('graphics/AsteroidsShader.sh')
 
-    song = love.audio.newSource('sounds/soundtrack.ogg', 'stream')
+    soundtrack = love.audio.newSource('sounds/soundtrack.ogg', 'stream')
 
     sounds = {
         ['boom'] = love.audio.newSource('sounds/boom.ogg', 'static'),
@@ -74,8 +74,8 @@ function love.load()
 
     gameState = 'start'
 
-    song:setLooping(false) -- set to true later
-    --love.audio.play(song)
+    soundtrack:setLooping(false) -- set to true later
+    --love.audio.play(soundtrack)
 end
 
 function love.keypressed(key, u)
@@ -189,10 +189,10 @@ function love.draw()
         love.graphics.setFont(largeFont)
         love.graphics.printf("Space Shooter CS50!", 0, WINDOW_HEIGHT / 4, WINDOW_WIDTH, 'center')
         love.graphics.setFont(smallFont)
-        love.graphics.printf("Press Enter to begin!", 0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, 'center')
+        love.graphics.printf("Press Enter to begin!", 0, 550, WINDOW_WIDTH, 'center')
     elseif gameState == 'play' then
         love.graphics.setFont(smallFont)
-        love.graphics.print("Score: " .. tostring(score), 100, 10)
+        love.graphics.print("Score: " .. tostring(score), 15, 10)
 
         love.graphics.setShader(asteroidsShader)
         love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -211,7 +211,7 @@ function love.draw()
 end
 
 -- https://gist.github.com/jasonbradley/4357406
-function test(hex)
+function hex2rgb(hex)
     hex = hex:gsub("#","")
     return {tonumber(hex:sub(1,2), 17) / 255, tonumber(hex:sub(3,4), 17) / 255, tonumber(hex:sub(5,6), 17) / 255}
 end

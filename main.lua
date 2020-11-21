@@ -4,7 +4,7 @@ WINDOW_HEIGHT = 960
 -- 1200
 
 math.randomseed(os.time())
-isAlive = true
+isAlive = nil
 score = 0
 gameTime = 0
 
@@ -26,12 +26,6 @@ function love.load()
 
     -- player
     player = {}
-    player.image = love.graphics.newImage('graphics/player.png')
-    player.width = player.image:getWidth()
-    player.height = player.image:getHeight()
-    player.x = WINDOW_WIDTH / 2 - player.width / 2
-    player.y = WINDOW_HEIGHT - player.height - 40
-    player.speed = 200
 
     -- bullet
     bullets = {}
@@ -53,18 +47,11 @@ function love.load()
     color5 = hex2rgb('#FF1D00')
 
     asteroids = {}
-    asteroidTimerMax = 1.5
-    asteroidTimer = asteroidTimerMax
     asteroidsColor = { color1, color2, color3, color4, color5 }
 
-    for i = 1, 10 do
-        table.insert(asteroids, initAstr())
-    end
-    asteroids[1].y = -.1
-
-    shipShader = love.graphics.newShader('graphics/ShipShader.sh')
     skyShader = love.graphics.newShader('graphics/SkyShader.sh')
     asteroidsShader = love.graphics.newShader('graphics/AsteroidsShader.sh')
+    shipShader = love.graphics.newShader('graphics/ShipShader.sh')
     
     soundtrack = love.audio.newSource('sounds/soundtrack.ogg', 'stream')
 
@@ -87,31 +74,37 @@ function love.keypressed(key, u)
         debug.debug()
      end
     if key == 'enter' or key == 'return' then
-        if gameState == 'start' then
-            gameState = 'play'
-        elseif gameState == 'done' then
-            gameState = 'play'
+        gameState = 'play'
+        isAlive = true
+        initShip()
+
+        for i = 1, 1 do
+            table.insert(asteroids, initAstr())
         end
+        asteroids[1].y = -.1
     end
 end
 
 function love.update(dt)
     gameTime = gameTime + dt
     skyShader:send("time", gameTime)
-    shipShader:send("time", gameTime)
 
     if gameState == 'play' then
 
         -- player
         if love.keyboard.isDown('left', 'a') then
             if player.x > 0 then -- player doesn't go off screen
-                player.x = player.x - (player.speed * dt)
+                player.x = player.x - dt
             end
         elseif love.keyboard.isDown('right', 'd') then
-            if player.x < (WINDOW_WIDTH - player.width) then
-                player.x = player.x + (player.speed * dt)
+            if player.x < 1 then
+                player.x = player.x + dt
             end
         end
+
+        shipShader:send("time", gameTime)
+        shipShader:send("position", {player.x, player.y})
+        shipShader:send("thrust", 0.45)
 
         -- asteroid
 
@@ -125,11 +118,13 @@ function love.update(dt)
             table.insert(astRot, astr.rotation)
             table.insert(seeds, astr.seed)
             table.insert(colors, astr.color)
-            -- if astr.y > 1.2 then
-            --      -- circle collision stolen from https://sheepolution.com/learn/book/21
-            --      distance = math.sqrt((astr.x - player.x)^2 + (astr.y - player.y)^2)
-            --      isAlive = distance < p1.size + p2.size
-            -- end
+            if astr.y > 1.2 then
+                -- circle collision stolen from https://sheepolution.com/learn/book/21
+                distance = math.sqrt((astr.x - player.x)^2 + (astr.y - player.y)^2)
+                if distance < astr.size + player.size then
+                    isAlive = false;
+                end
+            end
             if astr.y > 1.8 then
                 asteroids[i] = initAstr()
             end
@@ -168,18 +163,13 @@ function love.update(dt)
 
         -- reset game
         if not isAlive then
-            -- gameState = 'done'
-            bullets = {}
-            asteroids = {}
+            gameState = 'done'
 
-            canShootTimer = canShootTimerMax
-            asteroidTimer = asteroidTimerMax
-
-            player.x = WINDOW_WIDTH / 2 - player.width / 2
-            player.y = WINDOW_HEIGHT - player.height - 20
+            player.x = -1
+            player.y = -1
 
             score = 0
-            isAlive = true
+            -- isAlive = true
         end
     end
 end
@@ -202,17 +192,15 @@ function love.draw()
         love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
         love.graphics.setShader()
 
-        if isAlive then
-            love.graphics.setShader(shipShader)
-            love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
-            love.graphics.setShader()
+        love.graphics.setShader(shipShader)
+        love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+        love.graphics.setShader()
 
-            love.graphics.draw(player.image, player.x, player.y)
-
-            for i, v in ipairs(bullets) do
-                love.graphics.draw(v.image, v.x, v.y)
-            end
-        end
+        -- if isAlive then
+        --     for i, v in ipairs(bullets) do
+        --         love.graphics.draw(v.image, v.x, v.y)
+        --     end
+        -- end
     elseif gameState == 'done' then
         love.graphics.printf("Press Enter to try again!", 0, 140, WINDOW_WIDTH, 'center')
     end
@@ -231,11 +219,20 @@ function initAstr()
         speed = 0.2,
         seed = math.random(1, 9000),
         rotation = math.random() * 2 - 0.5,
-        color = asteroidsColor[love.math.random(1, #asteroidsColor)]
+        color = asteroidsColor[love.math.random(1, #asteroidsColor)],
+        size = 0.08
     }
     asteroid.x = math.min(math.max(.1, asteroid.x), .9)
     -- asteroid.y = math.min(math.max(.9, asteroid.y), .1)
     return asteroid
+end
+
+function initShip()
+    player = {
+        x = 0.5,
+        y = 1.4,
+        size = 0.06
+    }
 end
 
 -- copy paste code from https://stackoverflow.com/a/11671820

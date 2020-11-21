@@ -55,16 +55,17 @@ function love.load()
     asteroids = {}
     asteroidTimerMax = 1.5
     asteroidTimer = asteroidTimerMax
-    asteroidsColor = {color1, color2, color3, color4, color5}
+    asteroidsColor = { color1, color2, color3, color4, color5 }
 
     for i = 1, 10 do
         table.insert(asteroids, initAstr())
     end
     asteroids[1].y = -.1
 
+    shipShader = love.graphics.newShader('graphics/ShipShader.sh')
     skyShader = love.graphics.newShader('graphics/SkyShader.sh')
     asteroidsShader = love.graphics.newShader('graphics/AsteroidsShader.sh')
-
+    
     soundtrack = love.audio.newSource('sounds/soundtrack.ogg', 'stream')
 
     sounds = {
@@ -97,6 +98,7 @@ end
 function love.update(dt)
     gameTime = gameTime + dt
     skyShader:send("time", gameTime)
+    shipShader:send("time", gameTime)
 
     if gameState == 'play' then
 
@@ -201,6 +203,10 @@ function love.draw()
         love.graphics.setShader()
 
         if isAlive then
+            love.graphics.setShader(shipShader)
+            love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+            love.graphics.setShader()
+
             love.graphics.draw(player.image, player.x, player.y)
 
             for i, v in ipairs(bullets) do

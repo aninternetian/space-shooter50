@@ -77,6 +77,22 @@ mat2 rotate2d(float angle){
 }
 
 
+float nebula (in vec2 p, out vec3 kts) {
+    p += vec2(3., 0.);
+    p *= vec2(2., 1.);
+    float n = noise2d(p * 3.);
+    float c = perlin(p * .9);
+    n *= smoothstep(c, c + .4, .1);
+    kts.x = n;
+    n *= 1.- perlin((p + vec2(2)) * 10.);
+    n *= 1.- noise2d(p * 8.);
+    kts.y = n;
+    n *= sign(hash21(p) - .95);
+    kts.z = n;
+    return clamp(n / step(n, .005), 0., 1.) * .05;
+}
+
+
 float stars (in vec2 p, out float id, float s) {
     p *= 3.;
     vec2 gp = 1.5 - fract(p * s) * 3.;
@@ -117,8 +133,8 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
 	vec2 uv = 1.- (screen_coords - .5 * love_ScreenSize.xy)/love_ScreenSize.x;	
 	vec2 duv = uv +  vec2(0, t * .05);
 	float df = 0.;
-    float sId; 
-    float strs = stars(uv + vec2(0, t * .065), sId, 6.);
+    vec3 kts; float nbul = nebula(uv + vec2(0, t * .001), kts);
+    float sId; float strs = stars(uv + vec2(0, t * .065), sId, 6.);
     float farstrs = starsBg(duv, 6., vec2(-t, t) * .01) * 2.;
     float met1 = meteorsBg(duv, .65, vec2(-t * .5, t * 2.) * .05) *.7;
     float met2 = meteorsBg(duv, .75, vec2(t * .1)) * noise(duv.y * 2.) * .75;
@@ -126,8 +142,13 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
 	df = max(met1, met2);
     df = max(df, strs - df);
 	
-	vec3 col = vec3(abs(sin(farstrs * TWO_PI)) * .65, abs(sin(farstrs * PI)), min(1., farstrs * 2.));
-    col += vec3(strs * normUp(sin(sId * TWO_PI)), strs * normUp(sin(sId)), strs * normUp(sin(sId)));
+    vec3 col = vec3(
+        max(nbul, abs(sin(kts.x * kts.y * 4.))), 
+        max(nbul * kts.x, nbul + kts.y), 
+        pow(max(nbul, kts.y), normUp(cos(kts.x * 8.)))) * .1;
+	col += vec3(abs(sin(farstrs * TWO_PI)) * .65, abs(sin(farstrs * PI)), min(1., farstrs * 2.));
+    col += max(vec3(0), vec3(strs * abs(sin(sId)), strs * (sin(sId * PI)), strs * sin(sId + TWO_PI)));
+    //col += max(vec3(0), vec3(strs * normUp(sin(sId * TWO_PI)), strs * normUp(sin(sId)), strs * normUp(sin(sId))));
 	
 	col = max(col, vec3(df));
 	

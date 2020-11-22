@@ -54,6 +54,8 @@ function love.load()
     asteroids = {}
     asteroidsColor = { color1, color2, color3, color4, color5 }
 
+    -- ASTEROOID SHADER GOES HERE --
+
     -- data for asteroids
     for i = 1, ASTR_MAX do
         local step = 1 / (ASTR_MAX + 1)

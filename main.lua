@@ -9,8 +9,6 @@ score = 0
 isPaused = nil
 gameTime = 0
 
----------------------==START==-----------------------
-
 function love.load()
     love.window.setTitle('Space Shooter 50')
 
@@ -49,6 +47,11 @@ function love.load()
     asteroids = {}
     asteroidsColor = { color1, color2, color3, color4, color5 }
 
+    for i = 1, 1 do
+        table.insert(asteroids, initAstr())
+    end
+    asteroids[1].y = -.1
+
     skyShader = love.graphics.newShader('graphics/SkyShader.sh')
     asteroidsShader = love.graphics.newShader('graphics/AsteroidsShader.sh')
     shipShader = love.graphics.newShader('graphics/ShipShader.sh')
@@ -80,11 +83,10 @@ function love.keypressed(key, u)
             gameState = 'play'
             isAlive = true
             initShip()
-
-            for i = 1, 1 do
-                table.insert(asteroids, initAstr())
+            
+            for i, astr in ipairs(asteroids) do
+                astr = initAstr()
             end
-            asteroids[1].y = -.1
         end
     end
 end

@@ -3,10 +3,17 @@ WINDOW_HEIGHT = 960
 -- 628
 -- 1200
 
+ASTR_MAX = 5
+
 math.randomseed(os.time())
+
+astrXdata = {}
+astrXs = {} -- multiple asteroid x
+astrXctr = 1
+
 isAlive = nil
-score = 0
 isPaused = nil
+score = 0
 gameTime = 0
 
 function love.load()
@@ -47,7 +54,15 @@ function love.load()
     asteroids = {}
     asteroidsColor = { color1, color2, color3, color4, color5 }
 
-    for i = 1, 1 do
+    -- data for asteroids
+    for i = 1, ASTR_MAX do
+        local step = 1 / (ASTR_MAX + 1)
+        local x = i * step
+        table.insert(astrXdata, x)
+    end
+    astrXs = tableCopy(astrXdata)
+
+    for i = 1, ASTR_MAX do
         table.insert(asteroids, initAstr())
     end
     asteroids[1].y = -.1
@@ -140,7 +155,6 @@ function love.update(dt)
                 asteroids[i] = initAstr()
             end
         end
-        print(tablelength(asteroids))
 
         asteroidsShader:send("time", gameTime)
         asteroidsShader:send("coords", unpack(astrXY))
@@ -212,8 +226,19 @@ function hex2rgb(hex)
 end
 
 function initAstr()
+    local astrX = 0
+    if astrXctr <= ASTR_MAX then
+        astrX = astrXs[math.random(1, ASTR_MAX - astrXctr + 1)]
+        table.remove(astrXs, astrXctr)
+    else
+        astrXs = tableCopy(astrXdata)
+        astrXctr = 0
+    end
+    astrXctr = astrXctr + 1
+    print(astrX)
+
     asteroid = {
-        x = math.random(0, 10) * .1,
+        x = astrX,
         y = math.random(-1, -15) * 0.1,
         speed = 0.2,
         seed = math.random(1, 9000),
@@ -221,10 +246,11 @@ function initAstr()
         color = asteroidsColor[love.math.random(1, #asteroidsColor)],
         size = 0.08
     }
-    asteroid.x = math.min(math.max(.1, asteroid.x), .9)
+    -- asteroid.x = math.min(math.max(.1, asteroid.x), .9)
     -- asteroid.y = math.min(math.max(.9, asteroid.y), .1)
     return asteroid
 end
+-- math.random(0, 10) * .1,
 
 function initShip()
     player = {
@@ -250,3 +276,16 @@ function tablelength(T)
     for _ in pairs(T) do count = count + 1 end
     return count
 end
+
+-- clone table
+-- https://stackoverflow.com/a/641993 
+
+function tableCopy(t)
+    local t2 = {}
+    for k,v in pairs(t) do
+      t2[k] = v
+    end
+    return t2
+end
+
+-- copy = table.shallow_copy(a)

@@ -116,10 +116,10 @@ function love.update(dt)
 
         -- asteroid
 
-        astrXY = {}
-        astRot = {}
-        seeds = {}
-        colors = {}
+        local astrXY = {}
+        local astRot = {}
+        local seeds = {}
+        local colors = {}
         for i, astr in ipairs(asteroids) do
             astr.y = astr.y + (astr.speed * dt)
             table.insert(astrXY, {astr.x, astr.y})
@@ -129,16 +129,16 @@ function love.update(dt)
             if astr.y > 1.2 then
                 -- circle collision stolen from https://sheepolution.com/learn/book/21
                 distance = math.sqrt((astr.x - player.x)^2 + (astr.y - player.y)^2)
-                print(distance)
                 if distance < astr.size + player.size then
                     isAlive = false
-                    isPaused = true
+                    asteroids[i] = initAstr()
                 end
             end
             if astr.y > 1.8 then
                 asteroids[i] = initAstr()
             end
         end
+        print(tablelength(asteroids))
 
         asteroidsShader:send("time", gameTime)
         asteroidsShader:send("coords", unpack(astrXY))

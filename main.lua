@@ -98,7 +98,8 @@ function love.keypressed(key, u)
             gameState = 'play'
             isAlive = true
             initShip()
-            
+
+            astrXs = tableCopy(astrXdata)
             for i, astr in ipairs(asteroids) do
                 astr = initAstr()
             end
@@ -229,10 +230,10 @@ function initAstr()
     local astrX = 0
     if astrXctr <= ASTR_MAX then
         astrX = astrXs[math.random(1, ASTR_MAX - astrXctr + 1)]
-        table.remove(astrXs, astrXctr)
+        removeTblValue(astrXs, astrX)
     else
         astrXs = tableCopy(astrXdata)
-        astrXctr = 0
+        astrXctr = 1
     end
     astrXctr = astrXctr + 1
     print(astrX)
@@ -246,11 +247,16 @@ function initAstr()
         color = asteroidsColor[love.math.random(1, #asteroidsColor)],
         size = 0.08
     }
-    -- asteroid.x = math.min(math.max(.1, asteroid.x), .9)
-    -- asteroid.y = math.min(math.max(.9, asteroid.y), .1)
     return asteroid
 end
--- math.random(0, 10) * .1,
+
+function removeTblValue(tbl, value)
+    for i, v in ipairs(tbl) do
+        if v == value then
+            table.remove(tbl, i)
+        end
+    end
+end
 
 function initShip()
     player = {

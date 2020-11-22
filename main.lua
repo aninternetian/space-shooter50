@@ -6,6 +6,7 @@ WINDOW_HEIGHT = 960
 math.randomseed(os.time())
 isAlive = nil
 score = 0
+isPaused = nil
 gameTime = 0
 
 ---------------------==START==-----------------------
@@ -60,6 +61,7 @@ function love.load()
     }
 
     gameState = 'start'
+    isPaused = false
 
     soundtrack:setLooping(false) -- set to true later
     --love.audio.play(soundtrack)
@@ -69,22 +71,29 @@ function love.keypressed(key, u)
     if key == 'escape' then
         love.event.quit()
     end
-    if key == "rctrl" then
-        debug.debug()
-     end
-    if key == 'enter' or key == 'return' then
-        gameState = 'play'
-        isAlive = true
-        initShip()
+    if key == "p" then
+        isPaused = not isPaused
+    end
 
-        for i = 1, 1 do
-            table.insert(asteroids, initAstr())
+    if gameState == 'done' or gameState == 'start' then
+        if key == 'enter' or key == 'return' then
+            gameState = 'play'
+            isAlive = true
+            initShip()
+
+            for i = 1, 1 do
+                table.insert(asteroids, initAstr())
+            end
+            asteroids[1].y = -.1
         end
-        asteroids[1].y = -.1
     end
 end
 
 function love.update(dt)
+    if isPaused then
+        return
+    end
+
     gameTime = gameTime + dt
     skyShader:send("time", gameTime)
 
@@ -120,8 +129,10 @@ function love.update(dt)
             if astr.y > 1.2 then
                 -- circle collision stolen from https://sheepolution.com/learn/book/21
                 distance = math.sqrt((astr.x - player.x)^2 + (astr.y - player.y)^2)
+                print(distance)
                 if distance < astr.size + player.size then
-                    isAlive = false;
+                    isAlive = false
+                    isPaused = true
                 end
             end
             if astr.y > 1.8 then
@@ -134,12 +145,6 @@ function love.update(dt)
         asteroidsShader:send("rotations", unpack(astRot))
         asteroidsShader:send("seeds", unpack(seeds))
         asteroidsShader:send("colors", unpack(colors))
-
-        -- bullet
-        canShootTimer = canShootTimer - (1 * dt)
-        if canShootTimer < 0 then
-            canShoot = true
-        end
 
         if love.keyboard.isDown('space') then
             newBullet = {
@@ -168,7 +173,6 @@ function love.update(dt)
             player.y = -1
 
             score = 0
-            -- isAlive = true
         end
     end
 end
@@ -194,12 +198,6 @@ function love.draw()
         love.graphics.setShader(shipShader)
         love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
         love.graphics.setShader()
-
-        -- if isAlive then
-        --     for i, v in ipairs(bullets) do
-        --         love.graphics.draw(v.image, v.x, v.y)
-        --     end
-        -- end
     elseif gameState == 'done' then
         love.graphics.printf("Press Enter to try again!", 0, 140, WINDOW_WIDTH, 'center')
     end

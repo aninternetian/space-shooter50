@@ -1,5 +1,10 @@
 # Space Shooter 50
-A simple space shooter type of game for CS50 using Love2d.  
+A simple space shooter type of game for CS50 using Love2d.
+
+Made by  
+^(◕;ω;◕)^ ♥ Evilöve ♥     
+Roselle Carmen - Game designer, programmer  
+Alexey Andreev - Shaders, sanity recovery for Roselle  
 
 Progress updates on [twitter](https://twitter.com/aninternetian)
 

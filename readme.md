@@ -4,6 +4,7 @@ A simple space shooter type of game for CS50 using Love2d.
 Progress updates on [twitter](https://twitter.com/aninternetian)
 
 ![screenshot](https://github.com/iamironcat/space-shooter50/blob/master/graphics/screenshot.gif "screenshot")
+[Link to video](https://www.youtube.com/watch?v=v0H5I-TLT3g)
 
 # Credits
 CS50x - Prof David J. Malan, Brian Yu and Colton Ogden  

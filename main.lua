@@ -33,17 +33,6 @@ function love.load()
     -- player
     player = {}
 
-    -- bullet
-    bullets = {}
-    bulletImage = nil
-    canShoot = true
-    canShootTimerMax = 5
-    canShootTimer = canShootTimerMax 
-
-    bulletImage = love.graphics.newImage('graphics/bullet.png')
-    bulletWidth = bulletImage:getWidth()
-    bulletHeight = bulletImage:getHeight()
-
     -- asteroid
     color1 = hex2rgb('#FFC854')
     color2 = hex2rgb('#FF960D')
@@ -53,8 +42,6 @@ function love.load()
 
     asteroids = {}
     asteroidsColor = { color1, color2, color3, color4, color5 }
-
-    -- ASTEROOID SHADER GOES HERE --
 
     -- data for asteroids
     for i = 1, ASTR_MAX do
@@ -165,24 +152,17 @@ function love.update(dt)
         asteroidsShader:send("seeds", unpack(seeds))
         asteroidsShader:send("colors", unpack(colors))
 
+        -- shoot lasers
         if love.keyboard.isDown('space') then
-            newBullet = {
-                image = bulletImage,
-                x = player.x,
-                y = player.y,
-                speed = 500
-            }
-            table.insert(bullets, newBullet)
+            -- new bullet was created here
             sounds['shoot']:play()
-            canShoot = false
-            canShootTimer = canShootTimerMax
         end
-        for i, v in ipairs(bullets) do
-            v.y = v.y - (v.speed * dt)
-            if v.y < 0 then
-                table.remove(bullets, i)
-            end
-        end
+        -- for i, v in ipairs(bullets) do
+        --     v.y = v.y - (v.speed * dt)
+        --     if v.y < 0 then
+        --         table.remove(bullets, i)
+        --     end
+        -- end
 
         -- reset game
         if not isAlive then
@@ -228,6 +208,14 @@ function hex2rgb(hex)
     return {tonumber(hex:sub(1,2), 17) / 255, tonumber(hex:sub(3,4), 17) / 255, tonumber(hex:sub(5,6), 17) / 255}
 end
 
+function initShip()
+    player = {
+        x = 0.5,
+        y = 1.4,
+        size = 0.06
+    }
+end
+
 function initAstr()
     local astrX = 0
     if astrXctr <= ASTR_MAX then
@@ -258,14 +246,6 @@ function removeTblValue(tbl, value)
             table.remove(tbl, i)
         end
     end
-end
-
-function initShip()
-    player = {
-        x = 0.5,
-        y = 1.4,
-        size = 0.06
-    }
 end
 
 -- copy paste code from https://stackoverflow.com/a/11671820

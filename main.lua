@@ -7,9 +7,12 @@ ASTR_MAX = 5
 
 math.randomseed(os.time())
 
-astrXdata = {}
-astrXs = {} -- multiple asteroid x
-astrXctr = 1
+astrDataPools = {}
+astrDataPoolsCtr = 1
+
+-- astrXdata = {}
+-- astrXs = {} -- multiple asteroid x
+-- astrXctr = 1
 
 isAlive = nil
 isPaused = nil
@@ -44,17 +47,21 @@ function love.load()
     asteroidsColor = { color1, color2, color3, color4, color5 }
 
     -- data for asteroids
-    for i = 1, ASTR_MAX do
-        local step = 1 / (ASTR_MAX + 1)
-        local x = i * step
-        table.insert(astrXdata, x)
-    end
-    astrXs = tableCopy(astrXdata)
+    -- for i = 1, ASTR_MAX do
+    --     local step = 1 / (ASTR_MAX + 1)
+    --     local x = i * step
+    --     table.insert(astrXdata, x)
+    -- end
+    -- astrXs = tableCopy(astrXdata)
+
+    astrDataPools = getAstrDataPools()
 
     for i = 1, ASTR_MAX do
-        table.insert(asteroids, initAstr())
+        local asteroid = initAstr()
+        print(asteroid)
+        table.insert(asteroids, asteroid)
     end
-    asteroids[1].y = -.1
+    -- asteroids[1].y = -.1
 
     skyShader = love.graphics.newShader('graphics/SkyShader.sh')
     asteroidsShader = love.graphics.newShader('graphics/AsteroidsShader.sh')
@@ -88,10 +95,10 @@ function love.keypressed(key, u)
             isAlive = true
             initShip()
 
-            astrXs = tableCopy(astrXdata)
-            for i, astr in ipairs(asteroids) do
-                astr = initAstr()
-            end
+            -- astrXs = tableCopy(astrXdata)
+            -- for i, astr in ipairs(asteroids) do
+            --     astr = initAstr()
+            -- end
         end
     end
 end
@@ -122,6 +129,7 @@ function love.update(dt)
         shipShader:send("thrust", 0.45)
 
         -- asteroid
+        -- print(tablelength(asteroids))
 
         local astrXY = {}
         local astRot = {}
@@ -216,29 +224,68 @@ function initShip()
     }
 end
 
-function initAstr()
-    local astrX = 0
-    if astrXctr <= ASTR_MAX then
-        astrX = astrXs[math.random(1, ASTR_MAX - astrXctr + 1)]
-        removeTblValue(astrXs, astrX)
-    else
-        astrXs = tableCopy(astrXdata)
-        astrXctr = 1
-    end
-    astrXctr = astrXctr + 1
-    print(astrX)
-
-    asteroid = {
-        x = astrX,
-        y = math.random(-1, -15) * 0.1,
-        speed = 0.2,
-        seed = math.random(1, 9000),
-        rotation = math.random() * 2 - 0.5,
-        color = asteroidsColor[love.math.random(1, #asteroidsColor)],
-        size = 0.08
+function getAstrDataPools()
+    local result = {
+        Xs = {},
+        Ys = {},
+        cols = {},
+        rots = {}
     }
+    local step = 1 / (ASTR_MAX + 1)
+    for i = 1, ASTR_MAX do  
+        table.insert(result.Xs, i * step)
+        table.insert(result.Ys, -i * step * 2)
+        table.insert(result.cols, asteroidsColor[i])
+        table.insert(result.rots, math.floor(-ASTR_MAX * 0.5))
+    end
+    return result
+end
+
+function initAstr()
+    local asteroid = nil
+    if astrDataPoolsCtr <= ASTR_MAX then
+        asteroid = {
+            x = astrDataPools.Xs[math.random(1, ASTR_MAX - astrDataPoolsCtr)],
+            y = astrDataPools.Ys[math.random(1, ASTR_MAX - astrDataPoolsCtr)],
+            speed = 0.2,
+            seed = math.random(1, 9000),
+            rotation = astrDataPools.rots[math.random(1, ASTR_MAX - astrDataPoolsCtr)],
+            color = astrDataPools.cols[math.random(1, ASTR_MAX - astrDataPoolsCtr)],
+            size = 0.08
+        }
+        removeTblValue(astrDataPools.Xs, asteroid.x)
+        removeTblValue(astrDataPools.Ys, asteroid.y)
+        removeTblValue(astrDataPools.rots, asteroid.rotation)
+        removeTblValue(astrDataPools.cols, asteroid.color)
+        astrDataPoolsCtr = astrDataPoolsCtr + 1
+    else
+        astrDataPools = getAstrDataPools()
+        astrDataPoolsCtr = 0
+    end
+    
     return asteroid
 end
+
+    -- local astrX = 0
+    -- if astrXctr <= ASTR_MAX then
+    --     astrX = astrXs[math.random(1, ASTR_MAX - astrXctr + 1)]
+    --     removeTblValue(astrXs, astrX)
+    -- else
+    --     astrXs = tableCopy(astrXdata)
+    --     astrXctr = 1
+    -- end
+    -- astrXctr = astrXctr + 1
+    -- print(astrX)
+
+    -- asteroid = {
+    --     x = astrX,
+    --     y = math.random(-1, -15) * 0.1,
+    --     speed = 0.2,
+    --     seed = math.random(1, 9000),
+    --     rotation = math.random() * 2 - 0.5,
+    --     color = asteroidsColor[love.math.random(1, #asteroidsColor)],
+    --     size = 0.08
+    -- }
 
 function removeTblValue(tbl, value)
     for i, v in ipairs(tbl) do

@@ -93,9 +93,6 @@ function love.update(dt)
         return
     end
 
-    gameTime = gameTime + dt
-    skyShader:send("time", gameTime)
-
     if gameState == 'play' then
         -- player
         if love.keyboard.isDown('left', 'a') then
@@ -141,13 +138,6 @@ function love.update(dt)
                 shoot = 0
             end
         end
-        print("shoot "..shoot)
-
-        local thrust = -math.max(-1, math.min(1, player.xSpeed * 3))
-        shipShader:send("time", gameTime)
-        shipShader:send("position", {player.x, player.y})
-        shipShader:send("thrust", thrust * .5 + .5)
-        shipShader:send("shoot", shoot)
 
         -- asteroid
         local astrXY = {}
@@ -169,10 +159,18 @@ function love.update(dt)
                 end
             end
             if astr.y > 1.8 then
-                print("reinit "..i)
                 asteroids[i] = initAstr()
             end
         end
+
+        gameTime = gameTime + dt
+        skyShader:send("time", gameTime)
+
+        local thrust = -math.max(-1, math.min(1, player.xSpeed * 3))
+        shipShader:send("time", gameTime)
+        shipShader:send("position", {player.x, player.y})
+        shipShader:send("thrust", thrust * .5 + .5)
+        shipShader:send("shoot", shoot)
 
         asteroidsShader:send("time", gameTime)
         asteroidsShader:send("coords", unpack(astrXY))
@@ -247,7 +245,6 @@ function getAstrDataPools()
         table.insert(result.cols, asteroidsColor[i])
         table.insert(result.rots, math.floor(-ASTR_MAX * 0.5))
     end
-    -- print("init pool; size:"..tablelength(result.Xs))
     return result
 end
 

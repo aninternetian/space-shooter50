@@ -13,6 +13,8 @@ astrDataPoolsCtr = 1
 
 isAlive = nil
 isPaused = nil
+canShoot = nil
+shoot = 0
 score = 0
 gameTime = 0
 
@@ -95,21 +97,57 @@ function love.update(dt)
     skyShader:send("time", gameTime)
 
     if gameState == 'play' then
-
         -- player
         if love.keyboard.isDown('left', 'a') then
-            if player.x > 0 then -- player doesn't go off screen
-                player.x = player.x - dt
-            end
-        elseif love.keyboard.isDown('right', 'd') then
-            if player.x < 1 then
-                player.x = player.x + dt
-            end
+            player.xSpeed = player.xSpeed - dt
+        end
+        if love.keyboard.isDown('right', 'd') then
+            player.xSpeed = player.xSpeed + dt
         end
 
+        if player.xSpeed < 0 then
+            player.xSpeed = player.xSpeed + dt * .25 
+        end
+        if player.xSpeed > 0 then
+            player.xSpeed = player.xSpeed - dt * .25 
+        end
+
+        -- player doesn't go off screen
+        if player.x > 0.05 then 
+            player.x = player.x + player.xSpeed * 0.01
+        else
+            player.x = 0.06
+            player.xSpeed = 0            
+        end
+
+        if player.x < 0.95 then 
+            player.x = player.x + player.xSpeed * 0.01
+        else
+            player.x = 0.94
+            player.xSpeed = 0            
+        end
+
+        -- shoot lasers
+        if love.keyboard.isDown('space') then
+            -- new bullet was created here
+            canShoot = true 
+            sounds['shoot']:play()
+        end
+        if canShoot == true then 
+            if shoot < 1 then
+                shoot = shoot + dt
+            else
+                canShoot = false
+                shoot = 0
+            end
+        end
+        print("shoot "..shoot)
+
+        local thrust = -math.max(-1, math.min(1, player.xSpeed * 2))
         shipShader:send("time", gameTime)
         shipShader:send("position", {player.x, player.y})
-        shipShader:send("thrust", 0.45)
+        shipShader:send("thrust", thrust * .5 + .5)
+        shipShader:send("shoot", shoot)
 
         -- asteroid
         local astrXY = {}
@@ -141,18 +179,6 @@ function love.update(dt)
         asteroidsShader:send("rotations", unpack(astRot))
         asteroidsShader:send("seeds", unpack(seeds))
         asteroidsShader:send("colors", unpack(colors))
-
-        -- shoot lasers
-        if love.keyboard.isDown('space') then
-            -- new bullet was created here
-            sounds['shoot']:play()
-        end
-        -- for i, v in ipairs(bullets) do
-        --     v.y = v.y - (v.speed * dt)
-        --     if v.y < 0 then
-        --         table.remove(bullets, i)
-        --     end
-        -- end
 
         -- reset game
         if not isAlive then
@@ -202,7 +228,8 @@ function initShip()
     player = {
         x = 0.5,
         y = 1.4,
-        size = 0.06
+        size = 0.06,
+        xSpeed = 0
     }
 end
 

@@ -252,8 +252,12 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
     float t = time;
     vec2 uv = (1.- screen_coords) / love_ScreenSize.x;		   
     vec3 col = ship(
-        (uv + position) * 2.5, shoot, thrust
+        (uv + position) * 2.5, 
+        pow(shoot - 1.1, 2) * 3.7,
+        thrust
     );
 
     return vec4(col, sign(dot(col, col)));
 }
+// 3.7\left(x\ -1\right)^{2}
+//-shoot * 3.2 + 3.6, //.01 - 1

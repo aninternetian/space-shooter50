@@ -135,7 +135,7 @@ function love.update(dt)
         end
         if canShoot == true then 
             if shoot < 1 then
-                shoot = shoot + dt
+                shoot = shoot + dt * 2
             else
                 canShoot = false
                 shoot = 0
@@ -143,11 +143,11 @@ function love.update(dt)
         end
         print("shoot "..shoot)
 
-        local thrust = -math.max(-1, math.min(1, player.xSpeed * 2))
+        local thrust = -math.max(-1, math.min(1, player.xSpeed * 3))
         shipShader:send("time", gameTime)
         shipShader:send("position", {player.x, player.y})
         shipShader:send("thrust", thrust * .5 + .5)
-        shipShader:send("shoot", -0.1)
+        shipShader:send("shoot", shoot)
 
         -- asteroid
         local astrXY = {}

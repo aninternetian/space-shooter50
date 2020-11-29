@@ -147,7 +147,7 @@ function love.update(dt)
         shipShader:send("time", gameTime)
         shipShader:send("position", {player.x, player.y})
         shipShader:send("thrust", thrust * .5 + .5)
-        shipShader:send("shoot", shoot)
+        shipShader:send("shoot", -0.1)
 
         -- asteroid
         local astrXY = {}

@@ -93,6 +93,9 @@ function love.update(dt)
         return
     end
 
+    gameTime = gameTime + dt
+    skyShader:send("time", gameTime)
+
     if gameState == 'play' then
         -- player
         if love.keyboard.isDown('left', 'a') then
@@ -162,9 +165,6 @@ function love.update(dt)
                 asteroids[i] = initAstr()
             end
         end
-
-        gameTime = gameTime + dt
-        skyShader:send("time", gameTime)
 
         local thrust = -math.max(-1, math.min(1, player.xSpeed * 3))
         shipShader:send("time", gameTime)

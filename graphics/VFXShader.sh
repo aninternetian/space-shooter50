@@ -4,7 +4,7 @@
 
 #define HALF_PI 1.5708
 
-uniform float time;
+uniform float seed;
 
 uniform float progress;
 
@@ -81,7 +81,7 @@ mat2 rotate2d(float angle){
 
 
 float explosion (in vec2 st, in float t, out vec2 mt) {
-    vec2 seed = vec2(mod(floor(time / 32.), 32.), mod(floor(time), 32.));
+    vec2 seed = vec2(mod(floor(seed / 32.), 32.), mod(floor(seed), 32.));
     float t1 = abs(sin(t));
     float t3 = smoothstep(t, t1, 1.3);
     vec2 rst = rotate2d(t + seed.x * seed.y) * st;

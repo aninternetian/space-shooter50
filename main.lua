@@ -14,9 +14,12 @@ astrDataPoolsCtr = 1
 isAlive = nil
 isPaused = nil
 canShoot = nil
+boomIdx = -1
+boomProgress = 0
 shoot = 0
 score = 0
 gameTime = 0
+maxSeed = 1024^2 -- squared
 
 function love.load()
     love.window.setTitle('Space Shooter 50')
@@ -48,6 +51,7 @@ function love.load()
     skyShader = love.graphics.newShader('graphics/SkyShader.sh')
     asteroidsShader = love.graphics.newShader('graphics/AsteroidsShader.sh')
     shipShader = love.graphics.newShader('graphics/ShipShader.sh')
+    boomShader = love.graphics.newShader('graphics/VFXShader.sh')
     
     soundtrack = love.audio.newSource('sounds/soundtrack.ogg', 'stream')
 
@@ -83,6 +87,10 @@ function love.keypressed(key, u)
             for i = 1, ASTR_MAX do
                 local asteroid = initAstr()
                 table.insert(asteroids, asteroid)
+
+                if key == 'b' then
+                    boomIdx = 3
+                end
             end
         end
     end
@@ -97,6 +105,7 @@ function love.update(dt)
     skyShader:send("time", gameTime)
 
     if gameState == 'play' then
+
         -- player
         if love.keyboard.isDown('left', 'a') then
             player.xSpeed = player.xSpeed - dt
@@ -166,6 +175,18 @@ function love.update(dt)
             end
         end
 
+        -- asteroid go brrr
+        if boomIdx >= 0 then
+            local position = asteroid[boomIdx].astrXY
+            boomProgress = boomProgress + dt
+        elseif boomIdx == 0.1 then
+            -- asteroid destroyed
+            asteroids[i] = initAstr()
+        elseif boomIdx >= 1 then
+            boomIdx = -1
+        end
+
+        -- send all the shaders :3
         local thrust = -math.max(-1, math.min(1, player.xSpeed * 3))
         shipShader:send("time", gameTime)
         shipShader:send("position", {player.x, player.y})
@@ -177,6 +198,11 @@ function love.update(dt)
         asteroidsShader:send("rotations", unpack(astRot))
         asteroidsShader:send("seeds", unpack(seeds))
         asteroidsShader:send("colors", unpack(colors))
+
+        boomSeed = math.random(1, maxSeed)
+        boomShader:send("seed", boomSeed)
+        boomShader:send("progress", boomProgress)
+        boomShader:send("position", position)
 
         -- reset game
         if not isAlive then
@@ -254,7 +280,7 @@ function initAstr()
         x = astrDataPools.Xs[math.random(1, poolSize)],
         y = astrDataPools.Ys[math.random(1, poolSize)],
         speed = 0.2,
-        seed = math.random(1, 9000),
+        seed = math.random(1, maxSeed),
         rotation = astrDataPools.rots[math.random(1, poolSize)],
         color = astrDataPools.cols[math.random(1, poolSize)],
         size = 0.08

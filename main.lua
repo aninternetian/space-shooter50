@@ -181,11 +181,12 @@ function love.update(dt)
             local boomXY = {asteroids[boomIdx].x, asteroids[boomIdx].y}
             boomProgress = boomProgress + dt
 
-            if boomProgress > 0.1 then
+            if boomProgress > 0.5 then
                 -- asteroid destroyed
                 asteroids[boomIdx] = initAstr()
             end
             if boomProgress >= 1 then
+                boomProgress = 0;
                 boomIdx = -1
             end
 

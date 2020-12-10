@@ -94,7 +94,7 @@ float explosion (in vec2 st, in float t, out vec2 mt) {
     float f = dot(rst2, rst2);
     float r = dot(st, st);
     mt.x = f * d * n1;
-    r = step(r, .12 + t * .3);
+    r = step(r, .12 + t * .2);
     d = smoothstep(d * f * n, mix(d * n, f * (1.- n3 * .15), t) + .001 * t * t * t3 * 18., .01 * t);
     mt.y = d;
     d += d * n1 * n2;
@@ -106,12 +106,12 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
 {    
     float t = progress;
     vec2 uv = (1.- screen_coords) / love_ScreenSize.x;	
-    vec2 mt; float expl = explosion(uv + position, t * 3, mt);	   
-    vec3 col = vec3(
-        smoothstep(expl * mt.x - .1, expl * mt.y, .9), 
-        min(1., smoothstep(expl * mt.y, expl * mt.x, .7) * 4.), 
+    vec2 mt; float expl = explosion((uv + position) * 1.75, t * 3, mt);	   
+    vec3 col = expl * vec3(
+        smoothstep(expl * mt.x - .1,expl * mt.y, .9), 
+        min(1., smoothstep(expl * mt.y, expl * mt.x,.7) * 4.), 
         min(1., smoothstep(expl - .1, expl * mt.y, .2) * 2. * mt.y)
     );
 
-    return vec4(col, sign(dot(col, col)));
+    return vec4(col, min(1, expl * 1.5));
 }

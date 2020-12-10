@@ -75,7 +75,6 @@ function love.keypressed(key, u)
     end
     if key == 'b' then
         boomIdx = 3
-        print("boom")
         maxSeed = 1024^2 -- squared
         boomSeed = math.random(1, maxSeed)
     end
@@ -152,6 +151,25 @@ function love.update(dt)
             end
         end
 
+        -- asteroid go brrr
+        if boomIdx >= 0 then
+            local boomXY = {asteroids[boomIdx].x, asteroids[boomIdx].y}
+            boomProgress = boomProgress + dt
+
+            if boomProgress > 0.5 then
+                -- asteroid destroyed
+                asteroids[boomIdx] = initAstr()
+            end
+            if boomProgress >= 1 then
+                boomProgress = 0;
+                boomIdx = -1
+            end
+
+            boomShader:send("seed", boomSeed)
+            boomShader:send("progress", boomProgress)
+            boomShader:send("position", boomXY)
+        end
+
         -- asteroid
         local astrXY = {}
         local astRot = {}
@@ -174,25 +192,6 @@ function love.update(dt)
             if astr.y > 1.8 then
                 asteroids[i] = initAstr()
             end
-        end
-
-        -- asteroid go brrr
-        if boomIdx >= 0 then
-            local boomXY = {asteroids[boomIdx].x, asteroids[boomIdx].y}
-            boomProgress = boomProgress + dt
-
-            if boomProgress > 0.5 then
-                -- asteroid destroyed
-                asteroids[boomIdx] = initAstr()
-            end
-            if boomProgress >= 1 then
-                boomProgress = 0;
-                boomIdx = -1
-            end
-
-            boomShader:send("seed", boomSeed)
-            boomShader:send("progress", boomProgress)
-            boomShader:send("position", boomXY)
         end
 
         -- send all the shaders :3
@@ -231,12 +230,6 @@ function love.draw()
         love.graphics.setFont(smallFont)
         love.graphics.printf("Press Enter to begin!", 0, 550, WINDOW_WIDTH, 'center')
     elseif gameState == 'play' then
-        if boomIdx >= 0 then
-            love.graphics.setShader(boomShader)
-            love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
-            love.graphics.setShader()
-        end
-
         love.graphics.setFont(smallFont)
         love.graphics.print("Score: " .. tostring(score), 15, 10)
 
@@ -247,6 +240,12 @@ function love.draw()
         love.graphics.setShader(shipShader)
         love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
         love.graphics.setShader()
+
+        if boomIdx >= 0 then
+            love.graphics.setShader(boomShader)
+            love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+            love.graphics.setShader()
+        end
     elseif gameState == 'done' then
         love.graphics.printf("Press Enter to try again!", 0, 140, WINDOW_WIDTH, 'center')
     end

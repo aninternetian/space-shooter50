@@ -106,10 +106,12 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
 {    
     float t = progress;
     vec2 uv = (1.- screen_coords) / love_ScreenSize.x;	
-    vec2 mt; float expl = explosion(uv, t * 3, mt);	   
-    vec3 col = smoothstep(expl * mt.x - .1, expl * mt.y, .9), 
+    vec2 mt; float expl = explosion(uv + position, t * 3, mt);	   
+    vec3 col = vec3(
+        smoothstep(expl * mt.x - .1, expl * mt.y, .9), 
         min(1., smoothstep(expl * mt.y, expl * mt.x, .7) * 4.), 
         min(1., smoothstep(expl - .1, expl * mt.y, .2) * 2. * mt.y)
+    );
 
     return vec4(col, sign(dot(col, col)));
 }

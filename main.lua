@@ -191,7 +191,7 @@ function love.update(dt)
 
             boomShader:send("seed", boomSeed)
             boomShader:send("progress", boomProgress)
-            boomShader:send("position", {0.5, 1})
+            boomShader:send("position", boomXY)
         end
 
         -- send all the shaders :3

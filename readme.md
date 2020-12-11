@@ -9,7 +9,7 @@ Alexey Andreev - Shaders, sanity recovery for Roselle
 Progress updates on [twitter](https://twitter.com/aninternetian)
 
 ![screenshot](https://github.com/aninternetian/space-shooter50/blob/master/graphics/screenshot.gif "screenshot")  
-[Link to video](https://www.youtube.com/watch?v=v0H5I-TLT3g)
+[Link to video](https://youtu.be/-oxjyhY75aU)
 
 # Credits
 CS50x - Prof David J. Malan, Brian Yu and Colton Ogden  

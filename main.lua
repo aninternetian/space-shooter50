@@ -64,8 +64,8 @@ function love.load()
     gameState = 'start'
     isPaused = false
 
-    soundtrack:setLooping(true) -- set to true later
-    love.audio.play(soundtrack)
+    soundtrack:setLooping(false) -- set to true later
+    -- love.audio.play(soundtrack)
 end
 
 function love.keypressed(key, u)
@@ -166,9 +166,12 @@ function love.update(dt)
                 asteroids[boomIdx] = initAstr()
             end
             if boomProgress >= 1 then
-                boomProgress = 0;
+                boomProgress = 0
                 boomIdx = -1
             end
+            shoot = 0
+            shotOffset = 0
+            canShoot = false
 
             boomShader:send("seed", boomSeed)
             boomShader:send("progress", boomProgress)
@@ -207,10 +210,12 @@ function love.update(dt)
             shotDist = magnitute(astr.x, astr.y, shotXY.x, shotXY.y)
             if shotDist < astr.size then
                 sounds['boom']:play()
+                shoot = 0
+                canShoot = 0
+                shotOffset = 0
                 score = score + 5
                 boomIdx = i
-                maxSeed = 1024^2 -- squared
-                boomSeed = math.random(1, maxSeed)
+                boomSeed = math.random(1, 1024^2)
             end
         end
 

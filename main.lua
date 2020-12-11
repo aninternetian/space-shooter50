@@ -17,7 +17,7 @@ canShoot = nil
 boomIdx = -1
 boomProgress = 0
 shoot = 0
-shootOffset = 0
+shotOffset = 0
 score = 0
 gameTime = 0
 
@@ -74,11 +74,11 @@ function love.keypressed(key, u)
     if key == "p" then
         isPaused = not isPaused
     end
-    if key == 'b' then
-        boomIdx = 3
-        maxSeed = 1024^2 -- squared
-        boomSeed = math.random(1, maxSeed)
-    end
+    -- if key == 'b' then
+    --     boomIdx = 3
+    --     maxSeed = 1024^2 -- squared
+    --     boomSeed = math.random(1, maxSeed)
+    -- end
     if key == "space" then
         canShoot = true 
         sounds['shoot']:play()
@@ -98,7 +98,6 @@ function love.keypressed(key, u)
             end
         end
     end
-    
 end
 
 function love.update(dt)
@@ -147,13 +146,13 @@ function love.update(dt)
             if shoot < shootStop then
                 shoot = shoot + dt * 2
             else
-                shootOffset = shootOffset + dt * 4
+                shotOffset = shotOffset + dt * 6
                 shoot = shoot + dt * .3
             end
-            if shootOffset > 2.4 then
+            if shotOffset > 2.4 then
                 shoot = 0
                 canShoot = false
-                shootOffset = 0
+                shotOffset = 0
             end
         end
 
@@ -189,7 +188,7 @@ function love.update(dt)
             table.insert(colors, astr.color)
             if astr.y > 1.2 then
                 -- circle collision stolen from https://sheepolution.com/learn/book/21
-                distance = math.sqrt((astr.x - player.x)^2 + (astr.y - player.y)^2)
+                distance = magnitute(astr.x, astr.y, player.x, player.y)
                 if distance < astr.size + player.size then
                     isAlive = false
                     asteroids[i] = initAstr()
@@ -197,6 +196,19 @@ function love.update(dt)
             end
             if astr.y > 1.8 then
                 asteroids[i] = initAstr()
+            end
+
+            local shotDist = 0 -- from projectile to asteroid
+            local shotXY = {
+                x = player.x,
+                y = 2 - shotOffset
+            }
+            shotDist = magnitute(astr.x, astr.y, shotXY.x, shotXY.y)
+            if shotDist < astr.size then
+                score = score + 5
+                boomIdx = i
+                maxSeed = 1024^2 -- squared
+                boomSeed = math.random(1, maxSeed)
             end
         end
 
@@ -206,7 +218,7 @@ function love.update(dt)
         shipShader:send("position", {player.x, player.y})
         shipShader:send("thrust", thrust * .5 + .5)
         shipShader:send("shoot", shoot)
-        shipShader:send("shotOffset", shootOffset)
+        shipShader:send("shotOffset", shotOffset)
 
         asteroidsShader:send("time", gameTime)
         asteroidsShader:send("coords", unpack(astrXY))
@@ -349,4 +361,9 @@ function tableCopy(t)
       t2[k] = v
     end
     return t2
+end
+
+function magnitute(p1x, p1y, p2x, p2y)
+    dist = math.sqrt((p1x - p2x)^2 + (p1y - p2y)^2)
+    return dist
 end

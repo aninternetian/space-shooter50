@@ -64,8 +64,8 @@ function love.load()
     gameState = 'start'
     isPaused = false
 
-    soundtrack:setLooping(false) -- set to true later
-    -- love.audio.play(soundtrack)
+    soundtrack:setLooping(true) -- set to true later
+    love.audio.play(soundtrack)
 end
 
 function love.keypressed(key, u)

@@ -156,7 +156,6 @@ function love.update(dt)
                 shootOffset = 0
             end
         end
-        print(shoot);
 
         -- asteroid go brrr
         if boomIdx >= 0 then

@@ -8,7 +8,7 @@ Alexey Andreev - Shaders, sanity recovery for Roselle
 
 Progress updates on [twitter](https://twitter.com/aninternetian)
 
-![screenshot](https://github.com/iamironcat/space-shooter50/blob/master/graphics/screenshot.gif "screenshot")
+![screenshot](https://github.com/aninternetian/space-shooter50/blob/master/graphics/screenshot.gif "screenshot")  
 [Link to video](https://www.youtube.com/watch?v=v0H5I-TLT3g)
 
 # Credits

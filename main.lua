@@ -75,11 +75,6 @@ function love.keypressed(key, u)
     if key == "p" then
         isPaused = not isPaused
     end
-    -- if key == 'b' then
-    --     boomIdx = 3
-    --     maxSeed = 1024^2 -- squared
-    --     boomSeed = math.random(1, maxSeed)
-    -- end
     if key == "space" then
         canShoot = true 
         sounds['shoot']:play()

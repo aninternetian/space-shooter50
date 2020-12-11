@@ -79,7 +79,10 @@ function love.keypressed(key, u)
         maxSeed = 1024^2 -- squared
         boomSeed = math.random(1, maxSeed)
     end
-
+    if key == "space" then
+        canShoot = true 
+        sounds['shoot']:play()
+    end
     if gameState == 'done' or gameState == 'start' then
         if key == 'enter' or key == 'return' then
             gameState = 'play'
@@ -95,6 +98,7 @@ function love.keypressed(key, u)
             end
         end
     end
+    
 end
 
 function love.update(dt)
@@ -139,23 +143,20 @@ function love.update(dt)
 
         -- shoot lasers
         shootStop = 0.8
-        if love.keyboard.isDown('space') then
-            -- new bullet was created here
-            canShoot = true 
-            sounds['shoot']:play()
-        end
         if canShoot == true then 
             if shoot < shootStop then
                 shoot = shoot + dt * 2
             else
+                shootOffset = shootOffset + dt * 4
+                shoot = shoot + dt * .3
+            end
+            if shootOffset > 2.4 then
                 shoot = 0
                 canShoot = false
-            end
-            shootOffset = shootOffset + dt * 2
-            if shootOffset < WINDOW_HEIGHT then
-                shot = 0
+                shootOffset = 0
             end
         end
+        print(shoot);
 
         -- asteroid go brrr
         if boomIdx >= 0 then

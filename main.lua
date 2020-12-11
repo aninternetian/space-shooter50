@@ -58,13 +58,14 @@ function love.load()
     sounds = {
         ['boom'] = love.audio.newSource('sounds/boom.ogg', 'static'),
         ['shoot'] = love.audio.newSource('sounds/shoot.ogg', 'static'),
+        ['rip'] = love.audio.newSource('sounds/rip.ogg', 'static')
     }
 
     gameState = 'start'
     isPaused = false
 
     soundtrack:setLooping(false) -- set to true later
-    --love.audio.play(soundtrack)
+    -- love.audio.play(soundtrack)
 end
 
 function love.keypressed(key, u)
@@ -160,7 +161,6 @@ function love.update(dt)
         if boomIdx >= 0 then
             local boomXY = {asteroids[boomIdx].x, asteroids[boomIdx].y}
             boomProgress = boomProgress + dt
-
             if boomProgress > 0.5 then
                 -- asteroid destroyed
                 asteroids[boomIdx] = initAstr()
@@ -190,6 +190,7 @@ function love.update(dt)
                 -- circle collision stolen from https://sheepolution.com/learn/book/21
                 distance = magnitute(astr.x, astr.y, player.x, player.y)
                 if distance < astr.size + player.size then
+                    sounds['rip']:play()
                     isAlive = false
                     asteroids[i] = initAstr()
                 end
@@ -205,6 +206,7 @@ function love.update(dt)
             }
             shotDist = magnitute(astr.x, astr.y, shotXY.x, shotXY.y)
             if shotDist < astr.size then
+                sounds['boom']:play()
                 score = score + 5
                 boomIdx = i
                 maxSeed = 1024^2 -- squared

@@ -17,6 +17,7 @@ canShoot = nil
 boomIdx = -1
 boomProgress = 0
 shoot = 0
+shootOffset = 0
 score = 0
 gameTime = 0
 
@@ -137,17 +138,22 @@ function love.update(dt)
         end
 
         -- shoot lasers
+        shootStop = 0.8
         if love.keyboard.isDown('space') then
             -- new bullet was created here
             canShoot = true 
             sounds['shoot']:play()
         end
         if canShoot == true then 
-            if shoot < 1 then
+            if shoot < shootStop then
                 shoot = shoot + dt * 2
             else
-                canShoot = false
                 shoot = 0
+                canShoot = false
+            end
+            shootOffset = shootOffset + dt * 2
+            if shootOffset < WINDOW_HEIGHT then
+                shot = 0
             end
         end
 
@@ -200,6 +206,7 @@ function love.update(dt)
         shipShader:send("position", {player.x, player.y})
         shipShader:send("thrust", thrust * .5 + .5)
         shipShader:send("shoot", shoot)
+        shipShader:send("shotOffset", shootOffset)
 
         asteroidsShader:send("time", gameTime)
         asteroidsShader:send("coords", unpack(astrXY))

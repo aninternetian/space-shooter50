@@ -6,6 +6,8 @@
 
 uniform float time;
 
+uniform float shotOffset;
+
 uniform vec2 position; 
 
 uniform float shoot;
@@ -195,7 +197,7 @@ vec3 ship (in vec2 p, float shoot, float th)
     float js = max(j1, j2);
     float jhs = max(jh1, jh2);
     float fh;
-    float fr = fire(p, shoot, fh);
+    float fr = fire(p - vec2(0, shotOffset), shoot, fh);
     
     cpt2 = cpt2 - cpt;
     cpt2 *= hll3;
@@ -252,7 +254,9 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
     float t = time;
     vec2 uv = (1.- screen_coords) / love_ScreenSize.x;		   
     vec3 col = ship(
-        (uv + position) * 2.5, shoot, thrust
+        (uv + position) * 2.5, 
+        pow(shoot - 1.1, 2) * 3.7,
+        thrust
     );
 
     return vec4(col, sign(dot(col, col)));

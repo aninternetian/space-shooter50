@@ -140,15 +140,13 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
     float met2 = meteorsBg(duv, .75, vec2(t * .1)) * noise(duv.y * 2.) * .75;
 	
 	df = max(met1, met2);
-    df = max(df, strs - df);
-	
+
     vec3 col = vec3(
         max(nbul, abs(sin(kts.x * kts.y * 4.))), 
         max(nbul * kts.x, nbul + kts.y), 
         pow(max(nbul, kts.y), normUp(cos(kts.x * 8.)))) * .1;
 	col += vec3(abs(sin(farstrs * TWO_PI)) * .65, abs(sin(farstrs * PI)), min(1., farstrs * 2.));
-    col += max(vec3(0), vec3(strs * abs(sin(sId)), strs * (sin(sId * PI)), strs * sin(sId + TWO_PI)));
-    //col += max(vec3(0), vec3(strs * normUp(sin(sId * TWO_PI)), strs * normUp(sin(sId)), strs * normUp(sin(sId))));
+    col += max(vec3(0), vec3(strs * normUp(sin(sId * TWO_PI)), strs * normUp(sin(sId)), strs * normUp(sin(sId))));
 	
 	col = max(col, vec3(df));
 	

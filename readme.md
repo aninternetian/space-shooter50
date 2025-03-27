@@ -18,7 +18,6 @@ Tutorials - [How to Love](https://sheepolution.com/learn/book/contents)
 
 **Shaders**  
 [Ystyr](https://github.com/Ystyr)
-(My lovely husband <3)  
 
 **Game Art Assets**  
 [Space Shooter Redux](https://opengameart.org/content/space-shooter-redux) by  
